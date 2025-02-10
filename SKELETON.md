@@ -28,7 +28,7 @@
 
 ### 5. Leaderboards & Social Features
 - Display top winners
-- Allow users to see what other people are bettign on
+- Allow users to see what other people are betting on
 - Chat for game discussions?
 
 ### 6. Admin Panel
