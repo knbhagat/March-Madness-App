@@ -32,7 +32,6 @@ pip install flask
 Next I folllowed the Video Tutorial and Quickstart[^2][^3]:
 
 The code that I worked is in this repository: https://git.doit.wisc.edu/cdis/cs/courses/cs506/sp2025/team/T_03/Project_03/-/tree/main/RESEARCH/flask_intro_tutorial
-This file will also exist in that folder
 
 This work includes the things that I followed in the video and quickstart, as well as other independent code that I was playing around with. These include initializing flask, hello, handling data processing, API requests, API endpoints, general API calls from the frontend, SQLAlchemy initialization, and a basic user login. Hopefully these are enough examples to help my team understand Flask quicker and more efficiently than I did. 
 
