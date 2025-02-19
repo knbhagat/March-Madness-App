@@ -12,13 +12,13 @@ Our project will use Flask as a python backend. It will connect to our database 
 
 ### Time Spent
 
-~10 minutes installing Flask and setting up my environment
-~50 minutes following the tutorial
-~30 mintues following the "Quickstart"
+~5 minutes installing Flask and setting up my environment
+~60 minutes following the tutorial
+~20 mintues following the "Quickstart"
+~35 minutes making my own Flask functions
 
 ### Results
 
-<!--Explain what you learned/produced/etc. This section should explain the important things you learned so that it can serve as an easy reference for yourself and others who could benefit from reviewing this topic. Include your sources as footnotes. Make sure you include the footnotes where appropriate e.g [^1]-->
 I learned all the basics and essentials on how Flask works and how it integrates with the rest of our project. 
 
 I start my installation first[^1]:
@@ -42,11 +42,7 @@ This work includes the things that I followed in the video and quickstart, as we
 - Flask Installation[^1]
 - Flask Video Tutorial[^2]
 - Flask Quickstart[^3]
-- Placeholder4[^4]
-- And so on...
 
 [^1]: https://flask.palletsprojects.com/en/stable/installation/
 [^2]: https://www.youtube.com/watch?v=Z1RJmh_OqeA&ab_channel=freeCodeCamp.org
 [^3]: https://flask.palletsprojects.com/en/stable/quickstart/
-[^4]: www.google.com
-
