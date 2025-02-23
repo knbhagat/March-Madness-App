@@ -1,0 +1,53 @@
+services:
+  db:
+    image: mysql/mysql-server:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: mysql506
+      MYSQL_DATABASE: MySQLDatabase
+      MYSQL_ROOT_HOST: '%'
+    ports:
+      - "3308:3306"
+    volumes:
+      - ./MySQL_Database:/docker-entrypoint-initdb.d
+      - mysql_data:/var/lib/mysql
+    container_name: MySQLDatabase
+volumes:
+  mysql_data:
+
+
+
+
+
+      # backend:
+      #   build: ./backend
+      #   restart: always
+      #   environemnt:
+      #     FLASK_ENV=development
+      #     FLASK_APP=app.py
+      #     DATABASE_URL: 
+      #   depends_on:
+      #     - db
+      #   ports:
+      #     - "6000:6000"
+      #   volumes:
+      #     - 
+      #
+      #   container_name: FlaskBackend
+
+
+
+
+      # frontend:
+      #   build: ./frontend
+      #   restart: always
+      #   environment:
+      #     // environment
+      #   depends_on:
+      #     - backend
+      #   ports:
+      #     - "2000:2000"
+      #   volumes:
+      #   - 
+      #
+      #   container_name: frontendReact
