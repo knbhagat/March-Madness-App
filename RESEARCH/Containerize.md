@@ -2,7 +2,7 @@
 
 ### Summary of Work
 
-Containerizing the frontend and backend is different than the database. You need to create a specialized Dockerfile in both the frontend and backend directories, but not the database. This is because mysql uses pre-made image information from Docker. Once the Dockerfiles are creates in the backend and frontend directories, in the main directry, you create a .yml file (a docker compose file). In the docker compose file, which contains the containers for the frontend, backend, and DB, all three components run in isolated containers but are able to communicate with each other.
+Containerizing the frontend and backend is different than the database. You need to create a specialized Dockerfile in both the frontend and backend directories, but not the database. This is because mysql uses pre-made image information from Docker. Once the Dockerfiles are created in the backend and frontend directories, in the main directory, you create a .yml file (a docker compose file). In the docker compose file, which contains the containers for the frontend, backend, and DB, all three components run in isolated containers but are able to communicate with each other.
 
 ### Motivation
 Dockerizing is new to me, I'm not sure if it's new to them, but I want to give my team references and shared what I learned if they need the help.
