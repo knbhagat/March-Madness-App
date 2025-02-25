@@ -1,0 +1,45 @@
+services:
+  db:
+    image: mysql/mysql-server:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: team3
+      MYSQL_DATABASE: march_madness_betting
+      MYSQL_ROOT_HOST: '%'
+    ports:
+      - "3308:3306"
+    volumes:
+      - ./MySQL_Database:/docker-entrypoint-initdb.d
+      - mysql_data:/var/lib/mysql
+    container_name: MySQLDatabase
+
+  backend:
+    build: ./backend
+    restart: always
+    environment:
+      FLASK_ENV: development
+      FLASK_APP: app.py
+      DATABASE_URL: mysql+pymysql://root:team3@db:3306/MySQLDatabase
+    depends_on:
+      - db
+    ports:
+      - "6000:6000"
+    volumes:
+      - ./backend:/app
+    container_name: FlaskBackend
+
+  frontend:
+    build: ./frontend-mm_app
+    restart: always
+    environment:
+      VITE_BACKEND_URL: http://backend:6000
+    depends_on:
+      - backend
+    ports:
+      - "2000:2000"
+    volumes:
+      - ./frontend-mm_app:/app
+    container_name: frontendReact
+
+volumes:
+  mysql_data:
