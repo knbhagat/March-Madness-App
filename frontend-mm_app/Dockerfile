@@ -4,15 +4,11 @@ FROM node:20
 # Set the working directory
 WORKDIR /app
 
-# Copy dependencies and install
-COPY package.json package-lock.json ./
-RUN npm install
-
-# Copy the rest of the app’s source code
+# Copy the application code
 COPY . .
 
 # Expose the Vite dev server port
 EXPOSE 2000
 
-# Run the Vite development server
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+# Install dependencies and start the development server when the container starts
+CMD npm install && npm run dev -- --host 0.0.0.0
