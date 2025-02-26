@@ -1,21 +1,21 @@
-## Name
+# Name
 March Madness Betting Platform
 
-## Description
+# Description
 This project will be able to provide a platform for users to bet money on basketball teams for this year's March Maddness. Specific features are yet to be determined, but it serves the general purpose of provided a sports betting platform. During discussion, it was mentioned that the functionaliy would be similar to how ESPN does betting.
 
-## Instructions
-#Docker
+# Instructions
+##Docker
 How to start containers:
-'''shell
+```shell
 docker-compose up --build 
-'''
+```
 
-#React
+##React
 How to start React server:
-'''shell
+```shell
 npm run dev
-'''
+```
 
 ## Visuals
 Logo for our project:
