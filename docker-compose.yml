@@ -1,0 +1,42 @@
+services:
+  db:
+    build:
+      context: ./MySQL_Database
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: team3
+      MYSQL_DATABASE: march_madness_betting
+      MYSQL_ROOT_HOST: '%'
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    container_name: MySQLDatabase
+
+  backend:
+    build:
+      context: ./backend
+    restart: always
+    environment:
+      FLASK_ENV: development
+      FLASK_APP: app.py
+      DATABASE_URL: mysql+pymysql://root:team3@db:3306/march_madness_betting
+    depends_on:
+      - db
+    ports:
+      - "6000:6000"
+    container_name: FlaskBackend
+
+  frontend:
+    build: ./frontend-mm_app
+    restart: always
+    environment:
+      VITE_BACKEND_URL: http://localhost:6000
+    depends_on:
+      - backend
+    ports:
+      - "3000:5173"
+    container_name: frontendReact
+
+volumes:
+  mysql_data:
