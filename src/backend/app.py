@@ -1,9 +1,24 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, abort
 from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
 
+# Error Handling
+@app.errorhandler(500)
+def internal_error(error):
+    return jsonify({"message": "Internal Server Error"}), 500
+
+@app.errorhandler(404)
+def not_found_error(error):
+    return jsonify({"message": "Not Found Error"}), 404
+
+# Triggering a 500 Internal Server Error intentionally
+@app.route('/some-500-error-route')
+def some_500_error_route():
+    abort(500)
+
+# Route Configuration
 @app.route('/')
 def hello_world():
     return jsonify({"message": "Hello, World!"})
@@ -48,6 +63,5 @@ def update_profile():
 def delete_account():
     return jsonify({"message": "Delete account endpoint"})
 
-
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=8000)
