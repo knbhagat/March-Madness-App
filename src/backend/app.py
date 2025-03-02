@@ -3,6 +3,7 @@ from flask_cors import CORS
 import jwt
 import datetime
 import os
+from flask_sqlalchemy import SQLAlchemy
 
 # Must have flask cors: pip install flask flask-cors pyjwt
 # jwt: pip install PyJWT
@@ -10,7 +11,37 @@ import os
 app = Flask(__name__)
 CORS(app)
 
+#Configures uri for MySQL database and creates a database object
+
 app.config['SECRET_KEY'] = os.getenv("SECRET_KEY", "your_secret_key")  # Load from env
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://username:password@localhost/db_name'
+
+db = SQLAlchemy(app)
+
+#Each user, bet, and game will be stored in the database with the following parameters
+class Bet(db.Model):
+    bet_id = db.Column(db.Integer, primary_key = True)
+    user_id = db.Column(db.Integer)
+    game_id = db.Column(db.Integer)
+    bet_amount = db.Column(db.Integer)
+    bet_type = db.Column(db.String(20))
+    odds = db.Column(db.Double)
+    status = db.Column(db.String(20))
+    created_at = db.Column(db.String(20))
+
+class Game(db.Model):
+    game_id = db.Column(db.Integer, primary_key = True)
+    team_1 = db.Column(db.String(20))
+    team_2 = db.Column(db.String(20))
+    start_time = db.Column(db.String(20))
+    winner = db.Column(db.String(20))
+
+class User(db.Model):
+    user_id = db.Column(db.Integer, primary_key = True)
+    email = db.Column(db.String(20), unique_key = True)
+    password = db.Column(db.String(20))
+    balance = db.Column(db.Integer)
+
 
 @app.route('/')
 def hello_world():
