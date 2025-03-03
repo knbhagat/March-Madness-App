@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, abort
 from flask_cors import CORS
 import jwt
 import datetime
@@ -14,7 +14,7 @@ CORS(app)
 #Configures uri for MySQL database and creates a database object
 
 app.config['SECRET_KEY'] = os.getenv("SECRET_KEY", "your_secret_key")  # Load from env
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://username:password@localhost/db_name'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://username:password@localhost/march_maddness_betting'
 
 db = SQLAlchemy(app)
 
@@ -42,7 +42,21 @@ class User(db.Model):
     password = db.Column(db.String(20))
     balance = db.Column(db.Integer)
 
+# Error Handling
+@app.errorhandler(500)
+def internal_error(error):
+    return jsonify({"message": "Internal Server Error"}), 500
 
+@app.errorhandler(404)
+def not_found_error(error):
+    return jsonify({"message": "Not Found Error"}), 404
+
+# Triggering a 500 Internal Server Error intentionally
+@app.route('/some-500-error-route')
+def some_500_error_route():
+    abort(500)
+
+# Route Configuration
 @app.route('/')
 def hello_world():
     return jsonify({"message": "Hello, World!"})
@@ -50,6 +64,9 @@ def hello_world():
 @app.route('/auth/register', methods=['POST'])
 def register():
     data = request.get_json()
+     new_user = User(user_id = data['id'], email = data['email'], password = data['password'], balance = data['balance'])
+    db.session.add(new_user)
+    db.session.commit()
     return jsonify({"message": "User registered", "user": data}), 201   # HTTP status code 201
 
 @app.route('/auth/login', methods=['POST'])
