@@ -1,11 +1,23 @@
 import { Button } from "@/components/ui/button"
-
-import { useState } from 'react'
+import axios from "axios"
+import { useEffect, useState } from 'react'
 import MMLogo from "./images/logo.png"
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [count, setCount] = useState(0);
+  // testing api endpoint
+  const [res, setRes] = useState(null);
+
+  // for endpoint testing
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await axios.get('http://localhost:8000/');
+      console.log(response)
+      setRes(response.data.message)
+    }
+    fetchData();
+  }, []);
 
   return (
     <>
@@ -19,6 +31,9 @@ function App() {
         <Button onClick={() => setCount((count) => count + 1)}>
           This is the ShadCN Button: {count}
         </Button>
+        <div>
+          This is the to test that I can access the backend endpoint : {res}
+        </div>
       </div>
     </>
   )
