@@ -3,11 +3,44 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { FormEvent, useRef } from "react"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+// import axios from "axios"
 
 export function SignupForm () {
+  // Tracks email and password from input
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+
+  // Form Submission Handler
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    // Access the values from the refs
+    const email = emailRef.current?.value;
+    const password = passwordRef.current?.value;
+
+    /** Will Need To Update once backend API endpoints are set for POST auth/register */
+
+    // console.log(email);
+    // console.log(password);
+
+    // try {
+    //   // Make the POST request using axios
+    //   const response = await axios.post("/api/signup", { email, password });
+    //   // Handle success response using Alert
+    //   console.log("Signup successful:", response.data);
+    //   // Redirect user to home page
+    // } catch (error) {
+    //   // Handle error response
+    //   console.error("Signup failed:", error);
+    //   // Show an error message or alert to the user
+    //   alert("An error occurred. Please try again.");
+    // }
+  }
+
   return (
     <div className={cn("flex flex-col gap-6")}>
-      <form>
+      <form onSubmit={handleSubmit}>
         <div className="flex flex-col gap-6">
           <div className="flex flex-col items-center gap-2">
             <a
@@ -22,7 +55,7 @@ export function SignupForm () {
             <h1 className="text-xl font-bold">Create an account</h1>
             <div className="text-center text-sm">
               Already have an account?{" "}
-              <a href="#" className="underline underline-offset-4">
+              <a onClick={() => alert("Temporary Message, Want to Redirect User to Login Page when created")} className="underline underline-offset-4">
                 Sign in
               </a>
             </div>
@@ -34,6 +67,7 @@ export function SignupForm () {
                 id="email"
                 type="email"
                 placeholder="q@example.com"
+                ref={emailRef}
                 required
               />
               <Label htmlFor="password">Password</Label>
@@ -41,6 +75,7 @@ export function SignupForm () {
                 id="password"
                 type="password"
                 placeholder="Enter your password"
+                ref={passwordRef}
                 required
               />
             </div>
@@ -49,26 +84,47 @@ export function SignupForm () {
             </Button>
           </div>
           <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
-            <span className="relative z-10 bg-background px-2 text-muted-foreground">
-              Or
-            </span>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-1">
-            <Button variant="outline" className="w-full">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <path
-                  d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
-                  fill="currentColor"
-                />
-              </svg>
-              Continue with Google
-            </Button>
           </div>
         </div>
       </form>
-      <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary  ">
-        By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
-        and <a href="#">Privacy Policy</a>.
+      <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary ">
+          By clicking continue, you agree to our {" "}
+          <Popover>
+            <PopoverTrigger asChild><a href="#">Terms of Service</a></PopoverTrigger>
+            <PopoverContent>
+              <div className="space-y-4">
+              <h2 className="text-lg font-bold">Terms of Service</h2>
+                <p className="text-sm">
+                  By using our platform, you agree to our terms and policies.
+                </p>
+                <p className="text-sm">
+                  We may update these terms, and continued use means you accept any changes.
+                </p>
+                <p className="text-sm">
+                  You agree to use the platform responsibly. We may suspend or terminate your access for violations.
+                </p>
+              </div>
+            </PopoverContent>
+          </Popover>
+          {" "} and {" "}
+          <Popover>
+            <PopoverTrigger asChild><a href="#">Privacy Policy</a></PopoverTrigger>
+            <PopoverContent>
+              <div className="space-y-4">
+                <h2 className="text-lg font-bold">Privacy Policy</h2>
+                <p className="text-sm">
+                  We value your privacy and are committed to protecting your personal data.
+                </p>
+                <p className="text-sm">
+                  Your data is used to improve your experience and may be shared with trusted partners.
+                </p>
+                <p className="text-sm">
+                  You can control your data preferences through your account settings.
+                </p>
+              </div>
+            </PopoverContent>
+          </Popover>
+          .
       </div>
     </div>
   )
