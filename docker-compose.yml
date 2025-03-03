@@ -1,7 +1,7 @@
 services:
   db:
     build:
-      context: ./MySQL_Database
+      context: ./src/MySQL_Database
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: team3
@@ -15,7 +15,7 @@ services:
 
   backend:
     build:
-      context: ./backend
+      context: ./src/backend
     restart: always
     environment:
       FLASK_ENV: development
@@ -24,11 +24,11 @@ services:
     depends_on:
       - db
     ports:
-      - "6000:6000"
+      - "8000:8000"
     container_name: FlaskBackend
 
   frontend:
-    build: ./frontend-mm_app
+    build: ./src/frontend-mm_app
     restart: always
     environment:
       VITE_BACKEND_URL: http://localhost:6000

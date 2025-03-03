@@ -14,7 +14,11 @@ CORS(app)
 #Configures uri for MySQL database and creates a database object
 
 app.config['SECRET_KEY'] = os.getenv("SECRET_KEY", "your_secret_key")  # Load from env
+<<<<<<< HEAD
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://username:password@localhost/march_maddness_betting'
+=======
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://username:password@localhost/march_madness_betting'
+>>>>>>> 1ccd61243fb51f85477589b368c39913e4e67f48
 
 db = SQLAlchemy(app)
 
@@ -64,7 +68,7 @@ def hello_world():
 @app.route('/auth/register', methods=['POST'])
 def register():
     data = request.get_json()
-     new_user = User(user_id = data['id'], email = data['email'], password = data['password'], balance = data['balance'])
+    new_user = User(user_id = data['id'], email = data['email'], password = data['password'], balance = data['balance'])
     db.session.add(new_user)
     db.session.commit()
     return jsonify({"message": "User registered", "user": data}), 201   # HTTP status code 201
@@ -111,4 +115,4 @@ def delete_account():
     return jsonify({"message": "Account deleted"}), 200
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=8000)
