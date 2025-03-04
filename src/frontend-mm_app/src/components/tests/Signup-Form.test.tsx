@@ -5,7 +5,7 @@ import { describe, it, expect } from 'vitest';
 // Test for Sign up form
 describe('SignupForm Component', () => {
   
-  // Test surronding form element
+  // Test surrounding form element
   it('renders Signup form and ensures functionality', () => {
     render(<SignupForm />);
     
