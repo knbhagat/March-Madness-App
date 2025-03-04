@@ -38,55 +38,64 @@ export function SignupForm () {
     // }
   }
 
-  return (
-    <div className={cn("flex flex-col gap-6")}>
-      <form onSubmit={handleSubmit}>
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-col items-center gap-2">
-            <a
-              href="#"
-              className="flex flex-col items-center gap-2 font-medium"
-            >
-              <div className="flex h-8 w-8 items-center justify-center rounded-md">
-                <ShoppingBasket className="size-6" />
-              </div>
-              <span className="sr-only"></span>
-            </a>
-            <h1 className="text-xl font-bold">Create an account</h1>
-            <div className="text-center text-sm">
-              Already have an account?{" "}
-              <a onClick={() => alert("Temporary Message, Want to Redirect User to Login Page when created")} className="underline underline-offset-4">
-                Sign in
-              </a>
-            </div>
+  // functions for sections of code
+
+  // contains header icon and text prior to input
+  const header = () => {
+    return (
+      <div className="flex flex-col items-center gap-2">
+        <a
+          href="#"
+          className="flex flex-col items-center gap-2 font-medium"
+        >
+          <div className="flex h-8 w-8 items-center justify-center rounded-md">
+            <ShoppingBasket className="size-6" />
           </div>
-          <div className="flex flex-col gap-6">
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="q@example.com"
-                ref={emailRef}
-                required
-              />
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                ref={passwordRef}
-                required
-              />
-            </div>
-            <Button type="submit" className="w-full">
-              Sign Up
-            </Button>
-          </div>
-          <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
-          </div>
+          <span className="sr-only"></span>
+        </a>
+        <h1 className="text-xl font-bold">Create an account</h1>
+        <div className="text-center text-sm">
+          Already have an account?{" "}
+          <a onClick={() => alert("Temporary Message, Want to Redirect User to Login Page when created")} className="underline underline-offset-4">
+            Sign in
+          </a>
         </div>
-      </form>
+      </div>
+    )
+  }
+
+  // contains label, inputs, and button to submit form
+  const inputBody = () => {
+    return (
+      <div className="flex flex-col gap-6">
+        <div className="grid gap-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="q@example.com"
+            ref={emailRef}
+            required
+          />
+          <Label htmlFor="password">Password</Label>
+          <Input
+            id="password"
+            type="password"
+            placeholder="Enter your password"
+            ref={passwordRef}
+            required
+          />
+        </div>
+      <Button type="submit" className="w-full">
+        Sign Up
+      </Button>
+      </div>
+    )
+  }
+
+  // contains policies of app via link popover
+  const agreementText = () => {
+    return (
       <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary ">
           By clicking continue, you agree to our {" "}
           <Popover>
@@ -126,6 +135,20 @@ export function SignupForm () {
           </Popover>
           .
       </div>
+    )
+  }
+
+  return (
+    <div className={cn("flex flex-col gap-6")}>
+      <form onSubmit={handleSubmit}>
+        <div className="flex flex-col gap-6">
+          {header()}
+          {inputBody()}
+          <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
+          </div>
+          {agreementText()}
+        </div>
+      </form>
     </div>
   )
 }
