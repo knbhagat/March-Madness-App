@@ -1,7 +1,7 @@
 import axios from 'axios';
 // Url of Flask backend
 const backendUrl = 'http://localhost:8000';
-// API endpoint tests
+// backend API endpoint tests
 describe('Flask API Tests', () => {
   // Root Url
   describe('Root endpoint', () => {
