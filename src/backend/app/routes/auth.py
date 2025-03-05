@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, session
 from app import db
 from app.models.user import User
 import jwt
@@ -22,24 +22,23 @@ def register():
 @auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
-    user = User.query.filter_by(email=data.get("email")).first()
+    email = data.get('email')
+    password = data.get('password')
 
-    if user and user.password == data.get("password"):  # Replace with hashed password check
-        token = jwt.encode(
-            {"user": user.email, "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)},
-            app.config['SECRET_KEY'],
-            algorithm="HS256"
-        )
-        return jsonify({"message": "Login successful", "token": token})
+    user = User.query.filter_by(email=email).first()
+    if not user or user.password != password:  # Direct password comparison
+        return jsonify({'error': 'Invalid email or password.'}), 401
 
-    return jsonify({"message": "Invalid credentials"}), 401
+    session['user_id'] = user.id
+    return jsonify({'message': 'Login successful', 'token': user.id}), 200
 
-
-## Dummy routes (for now) : 
 @auth_bp.route('/logout', methods=['POST'])
 def logout():
-    return jsonify({"message": "Logout successful"}), 200
+    session.pop('user_id', None)  # Remove user session
 
+    return jsonify({"message": "Logout successful"}), 200 
+
+## Dummy routes (for now) : 
 @auth_bp.route('/forgot-password', methods=['POST'])
 def forgot_password():
     return jsonify({"message": "Password reset link sent"}), 200
