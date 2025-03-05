@@ -7,31 +7,35 @@ from flask import current_app as app
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
+# Route for user registration
 @auth_bp.route('/register', methods=['POST'])
 def register():
 
     data = request.get_json()
     new_user = User(email=data['email'], password=data['password'], balance=data.get('balance', 0))
     
-    ##TODO check if user is already in DB before trying to write
+    # Handle existing email edge case
     existing_user = User.query.filter_by(email=data['email']).first()
     if existing_user:
         return jsonify({"error": "Email already exists"}), 400
     
+    # Add new user to database
     db.session.add(new_user)
     db.session.commit()
     return jsonify({"message": "User registered", "user": data}), 201
 
+# Route for user login
 @auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
     email = data.get('email')
     password = data.get('password')
 
-    user = User.query.filter_by(email=email).first()
-    if not user or user.password != password:  # Direct password comparison
+    user = User.query.filter_by(email=email).first()    # Find user email in database
+    if not user or user.password != password:  # Direct password comparison (Maybe hash password later)
         return jsonify({'error': 'Invalid email or password.'}), 401
 
+    # Store user ID in session for auth
     session['id'] = user.id
     return jsonify({'message': 'Login successful', 'token': user.id}), 200
 
