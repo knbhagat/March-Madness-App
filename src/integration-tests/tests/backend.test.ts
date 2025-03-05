@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const backendUrl = 'http://localhost:8000';
-
+// backend API endpoint tests
 describe('Flask API Tests', () => {
   let testUser = { email: `test${Date.now()}@example.com`, password: "password" };
   let authToken: string;
