@@ -14,6 +14,9 @@ def register():
     new_user = User(email=data['email'], password=data['password'], balance=data.get('balance', 0))
     
     ##TODO check if user is already in DB before trying to write
+    existing_user = User.query.filter_by(email=data['email']).first()
+    if existing_user:
+        return jsonify({"error": "Email already exists"}), 400
     
     db.session.add(new_user)
     db.session.commit()
@@ -29,7 +32,7 @@ def login():
     if not user or user.password != password:  # Direct password comparison
         return jsonify({'error': 'Invalid email or password.'}), 401
 
-    session['user_id'] = user.id
+    session['id'] = user.id
     return jsonify({'message': 'Login successful', 'token': user.id}), 200
 
 @auth_bp.route('/logout', methods=['POST'])
@@ -38,7 +41,7 @@ def logout():
 
     return jsonify({"message": "Logout successful"}), 200 
 
-## Dummy routes (for now) : 
+## Dummy routes (for now), possibly delete: 
 @auth_bp.route('/forgot-password', methods=['POST'])
 def forgot_password():
     return jsonify({"message": "Password reset link sent"}), 200
