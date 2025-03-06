@@ -24,21 +24,29 @@ export function SignupForm () {
 
     /** Will Need To Update once backend API endpoints are set for POST auth/register */
 
-    // console.log(email);
-    // console.log(password);
+    console.log(email);
+    console.log(password);
 
-    // try {
-    //   // Make the POST request using axios
-    //   const response = await axios.post("/api/signup", { email, password });
-    //   // Handle success response using Alert
-    //   console.log("Signup successful:", response.data);
-    //   // Redirect user to home page
-    // } catch (error) {
-    //   // Handle error response
-    //   console.error("Signup failed:", error);
-    //   // Show an error message or alert to the user
-    //   alert("An error occurred. Please try again.");
-    // }
+    try {
+      // Make the POST request using axios
+      const response = await fetch("http://localhost:8000/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await response.json();
+      // Handle success response using Alert
+      if (!response.ok) {
+        throw new Error(data.error || "Signup failed");
+      }
+      alert("Signup successful!");
+      // Redirect user to home page
+    } catch (error: any) {
+      // Handle error response
+      console.error("Signup failed:", error);
+      // Show an error message or alert to the user
+      alert(error.message); // Show the actual error message
+    }
   }
 
   // functions for sections of code
