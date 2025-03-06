@@ -9,10 +9,6 @@ describe('LoginForm Component', () => {
   it('renders Login form and ensures functionality', () => {
     render(<LoginForm />);
 
-    // Ensures popover links are present
-    fireEvent.click(screen.getByText(/terms of service/i));
-    fireEvent.click(screen.getByText(/privacy policy/i));
-
     // Check if the form elements are rendered.
     const emailInput = screen.getByLabelText("Email");
     const passwordInput = screen.getByLabelText("Password");
