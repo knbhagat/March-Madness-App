@@ -5,12 +5,14 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { FormEvent, useRef } from "react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { useNavigate } from 'react-router-dom';
 // import axios from "axios"
 
 export function SignupForm () {
   // Tracks email and password from input
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
 
   // Form Submission Handler
   const handleSubmit = async (e: FormEvent) => {
@@ -18,6 +20,7 @@ export function SignupForm () {
     // Access the values from the refs
     const email = emailRef.current?.value;
     const password = passwordRef.current?.value;
+    
 
     /** Will Need To Update once backend API endpoints are set for POST auth/register */
 
@@ -64,7 +67,7 @@ export function SignupForm () {
         <h1 className="text-xl font-bold">Create an account</h1>
         <div className="text-center text-sm">
           Already have an account?{" "}
-          <a onClick={() => alert("Temporary Message, Want to Redirect User to Login Page when created")} className="underline underline-offset-4">
+          <a onClick={() => navigate('/login')} className="underline underline-offset-4">
             Sign in
           </a>
         </div>
