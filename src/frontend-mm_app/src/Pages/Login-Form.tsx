@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FormEvent, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import Navbar from "@/components/navbar";
 
 export function LoginForm() {
   const emailRef = useRef<HTMLInputElement>(null);
@@ -97,7 +98,7 @@ export function LoginForm() {
   };
 
   return (
-    <div className="auth-container">
+    <div className="max-w-[500px] m-auto mt-20">
       <div className={cn("flex flex-col gap-6")}>
         <form onSubmit={handleSubmit}>
           <div className="flex flex-col gap-6">

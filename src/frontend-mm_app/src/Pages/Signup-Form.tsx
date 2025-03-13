@@ -68,7 +68,7 @@ export function SignupForm () {
         <h1 className="text-xl font-bold">Create an account</h1>
         <div className="text-center text-sm">
           Already have an account?{" "}
-          <a onClick={() => navigate('/login')} className="underline underline-offset-4">
+          <a onClick={() => navigate('/login')} className="underline underline-offset-4 hover:cursor-pointer">
             Sign in
           </a>
         </div>
@@ -151,7 +151,8 @@ export function SignupForm () {
   }
 
   return (
-    <div className="auth-container">
+    
+    <div className="auth-container max-w-[500px] m-auto mt-20">
       <div className={cn("flex flex-col gap-6")}>
         <form onSubmit={handleSubmit}>
           <div className="flex flex-col gap-6">
