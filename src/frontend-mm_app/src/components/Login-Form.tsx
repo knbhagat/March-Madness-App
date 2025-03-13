@@ -4,51 +4,50 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FormEvent, useRef } from "react";
-import { useNavigate } from 'react-router-dom';
-// This file follows a similar structure to the Signup Form
+import { useNavigate } from "react-router-dom";
 
-export function LoginForm () {
-  // Tracks email and password from input
+export function LoginForm() {
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
-  // Form Submission Handler
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    // Access the values from the refs
     const email = emailRef.current?.value;
     const password = passwordRef.current?.value;
-    
 
-    /** Will Need To Update once backend API endpoints are set for POST auth/login */
+    try {
+      // Make the POST request to Flask login endpoint
+      const response = await fetch("http://localhost:8000/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || "Login failed");
+      }
 
-    // console.log(email);
-    // console.log(password);
+      // If login is successful, store the token or user ID in localStorage
+      localStorage.setItem("token", data.token);
 
-    // try {
-    //   // Make the POST request using axios
-    //   const response = await axios.post("/api/login", { email, password });
-    //   // Handle success response using Alert
-    //   console.log("Login successful:", response.data);
-    //   // Redirect user to home page
-    // } catch (error) {
-    //   // Handle error response
-    //   console.error("Login failed:", error);
-    //   // Show an error message or alert to the user
-    //   alert("An error occurred. Please try again.");
-    // }
-  }
+      // Navigate to homepage or dashboard
+      navigate("/");
+    } catch (error: any) {
+      console.error("Login failed:", error);
+      alert(error.message); // Show the actual error message
+    }
+  };
 
-  // functions for sections of code
-
-  // contains header icon and text prior to input
+  // Header content
   const header = () => {
     return (
       <div className="flex flex-col items-center gap-2">
-        <a
-          href="#"
-          className="flex flex-col items-center gap-2 font-medium"
-        >
+        <a href="#" className="flex flex-col items-center gap-2 font-medium">
           <div className="flex h-8 w-8 items-center justify-center rounded-md">
             <ShoppingBasket className="size-6" />
           </div>
@@ -57,15 +56,18 @@ export function LoginForm () {
         <h1 className="text-xl font-bold">Welcome Back</h1>
         <div className="text-center text-sm">
           Don't have an account?{" "}
-          <a onClick={() => navigate('/signup')} className="underline underline-offset-4">
+          <a
+            onClick={() => navigate("/signup")}
+            className="underline underline-offset-4 cursor-pointer"
+          >
             Sign Up
           </a>
         </div>
       </div>
     );
-  }
+  };
 
-  // contains label, inputs, and button to submit form
+  // Input + submit button
   const inputBody = () => {
     return (
       <div className="flex flex-col gap-6">
@@ -92,16 +94,18 @@ export function LoginForm () {
         </Button>
       </div>
     );
-  }
+  };
 
   return (
-    <div className={cn("flex flex-col gap-6")}>
-      <form onSubmit={handleSubmit}>
-        <div className="flex flex-col gap-6">
-          {header()}
-          {inputBody()}
-        </div>
-      </form>
+    <div className="auth-container">
+      <div className={cn("flex flex-col gap-6")}>
+        <form onSubmit={handleSubmit}>
+          <div className="flex flex-col gap-6">
+            {header()}
+            {inputBody()}
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

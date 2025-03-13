@@ -40,6 +40,7 @@ export function SignupForm () {
         throw new Error(data.error || "Signup failed");
       }
       alert("Signup successful!");
+      navigate("/");
       // Redirect user to home page
     } catch (error: any) {
       // Handle error response
@@ -150,16 +151,17 @@ export function SignupForm () {
   }
 
   return (
-    <div className={cn("flex flex-col gap-6")}>
-      <form onSubmit={handleSubmit}>
-        <div className="flex flex-col gap-6">
-          {header()}
-          {inputBody()}
-          <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
+    <div className="auth-container">
+      <div className={cn("flex flex-col gap-6")}>
+        <form onSubmit={handleSubmit}>
+          <div className="flex flex-col gap-6">
+            {header()}
+            {inputBody()}
+            <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border" />
+            {agreementText()}
           </div>
-          {agreementText()}
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
-  )
+  );
 }
