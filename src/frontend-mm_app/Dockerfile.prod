@@ -6,10 +6,12 @@ COPY package.json package-lock.json .
 
 RUN npm install
 
+RUN npm install -g serve
+
 COPY . .
 
 EXPOSE 3000
 
 RUN npm run prod
 
-CMD ["serve","-s","./src/frontend-mm_app/dist"]
+CMD ["serve","-s","dist"]
