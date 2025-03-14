@@ -10,4 +10,6 @@ COPY . .
 
 EXPOSE 3000
 
-CMD ["npm", "run","prod"]
+RUN npm run prod
+
+CMD ["serve","-s","./src/frontend-mm_app/dist"]
