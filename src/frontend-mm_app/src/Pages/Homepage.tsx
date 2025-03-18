@@ -9,7 +9,7 @@ export default function Homepage() {
         className="absolute inset-0 bg-cover bg-center"
         style={{
           backgroundImage: "url('basketballcourt.jpg')",
-          opacity: 0.09,
+          opacity: 0.1,
         }}
       ></div>
 

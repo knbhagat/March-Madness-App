@@ -28,6 +28,26 @@ const rounds: RoundProps[] = [
       },
     ],
   },
+  {
+    title: 'Round Three',
+    seeds: [
+      {
+        id: 3,
+        date: new Date().toDateString(),
+        teams: [{ name: 'Team A' }, { name: 'Team C' }],
+      },
+    ],
+  },
+  {
+    title: 'Round Four',
+    seeds: [
+      {
+        id: 3,
+        date: new Date().toDateString(),
+        teams: [{ name: 'Team D' }, { name: 'Team Z' }],
+      },
+    ],
+  },
 ];
 
 
