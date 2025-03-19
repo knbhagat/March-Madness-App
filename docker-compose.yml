@@ -1,4 +1,4 @@
-version: '3.8'
+# version: '3.8'
 
 services:
   db:
@@ -43,8 +43,9 @@ services:
       - ./src/frontend-mm_app:/app # Mount source code for live updates
       - /app/node_modules # Prevent overwriting node_modules
     container_name: frontendReact
-    command: ["npm", "run", "dev", "--", "--host"]
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
 
 # Ensure this section exists to define the named volume
 volumes:
   mysql_data:
+
