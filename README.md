@@ -1,87 +1,88 @@
-# Name
-March Madness Betting Platform
+# March Madness Betting Platform
 
-# Description
-This project will be able to provide a platform for users to bet money on basketball teams for this year's March Maddness. Specific features are yet to be determined, but it serves the general purpose of provided a sports betting platform. During discussion, it was mentioned that the functionaliy would be similar to how ESPN does betting.
+A full-stack web application that simulates sports betting for the NCAA March Madness tournament. Users can create brackets, track live scores, and compete with others in a simulated betting environment.
 
-# Instructions
-## Docker
-How to start containers:
+## Features
 
-Command for starting containers in a development environment:
-```shell
+- **User Authentication**: Secure login and registration system
+- **Live Bracket Creation**: Interactive bracket interface for March Madness predictions
+- **Real-time Updates**: Live scores and game updates
+- **Bracket Scoring**: Automated scoring system based on game outcomes
+- **User Profiles**: Save and manage multiple brackets
+- **Live Scores Page**: Real-time game statistics and results
+- **AI Chatbot**: Interactive assistant for tournament information
+- **Responsive Design**: Mobile-friendly interface
+
+## Tech Stack
+
+### Frontend
+- React.js
+- Material-UI
+- Axios for API calls
+- WebSocket for real-time updates
+- ShadCN library
+- Typescript deployed with Vite
+
+### Backend
+- Python/Flask
+- RESTful API architecture
+- SQL Database
+- JWT Authentication
+
+### DevOps
+- Docker containerization
+- CI/CD Pipeline
+- Development and Production environments
+
+## Getting Started
+
+### Prerequisites
+- Docker
+- Node.js
+- Python 3.x
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone [repository-url]
+```
+
+2. Start the development environment:
+```bash
 docker-compose -f docker-compose-dev.yml up --build
 ```
 
-Command for starting contaiers in a production environment:
-```shell
+3. Start the production environment:
+```bash
 docker-compose -f docker-compose-prod.yml up --build
 ```
-## React
-How to start React server:
-```shell
+
+4. Start the React development server:
+```bash
 npm run dev
 ```
 
-## Visuals
-Logo for our project:
-![image info](./logo.png)
+## Architecture
 
-## Roadmap
+The application follows a microservices architecture with three main components:
+1. Frontend React application
+2. Backend Flask API
+3. SQL Database
 
-# Planning Stage
-We are in the progress of deciding what functionality we want out project to have. We have a logo and plan on what tools we want to use to develop the platform.
+Each component is containerized using Docker for consistent development and deployment environments.
 
-# Development Stage
-We intend developing the backend using python and creating the frontend/UI using react.
+## API Integration
 
-## Authors and acknowledgment
-Stephen Bail, Norris Chen, Jack Hanfland, Max Hubenko, Krishaan Ghagat, and Lance Munson
+The platform integrates with external APIs to provide:
+- Live game scores
+- Team statistics
+- Tournament brackets
+- Real-time updates
 
-# Project status
-This project is still in the beginning stages of development. We have yet to come up with any ideas for functionality but we have came up with a logo, a style guide, a SKELETON.md template, a ROLES.md file, and a README.md file.
+## Security Features
 
-## Sprint 1, Week 0 (Febuary 12 - 19) - Progress Report
-So far, we have completed the Figma design for the UI, and initialized the React application. We have set up the SQL database, and found APIs that could be used for our project. We also researched about the backend to understand the work and code we will need for the future.
-
-Our plan for this week is to set up the backend. And then containerize the frontend, backend, and database, and ensure communication between all three.
-
-## Sprint 1, Week 1 (Febuary 19 - 26) - Progress Report
-This week we containerized and dockerized the frontend, backend and database
-
-Our plan for next week is to set up the sign in page, start user authentication for the sign in page
-
-## Sprint 1, Week 2 (Febuary 26 - March 4) - Progress Report
-This week we completed the sign in page, and also the user authentication and now all three, frontend, backend, database are functional and talking to each other.
-
-Our plan for next week is to start implimenting the API calls and information into the database and complete the homepage and bar to choose which page you are on for the frontend 
-
-## Sprint 2, Week 1 (March 4 - March 11) - Progress Report
-Going into sprint 2, our team was able to clear out a majority of the issues from sprint 1, leaving the "update STYLEmd" as the only remaining issue that is left open from sprint 1. This week we were able to implement the website homepage, which has a user-friendly interface and closely followed our Figma design. 
-
-Our plan for next week is to create a frontend skeleton for our bracket and have it work with the backend API call. Additionally we want to set up our production container and create a CI/CD pipeline, while continuing to update documentation as needed. 
-
-## Sprint 2, Week 2 (March 11 - March 18) - Progress Report
-This week we were able to complete the bracket skeleton, and we created our backend bracket functionality with the proper API calls. We also restructued some of the website functionality, and updated our dev container so that it would dynamically update our website when we made changes in frontend. 
-
-Ideally, our plan for next week is to have a functioning bracket that has all the march madness teams and all their respective information (seeding, matchup, region, game start, etc). This will require some additional work in both our frontend, backend, and testing.
-
-## Sprint 2, Week 3 (March 18 - April 2) - Progress Report
-Over the past two weeks (including spring break), our group successfully implemented the user team selection functionality and the logic to auto-populate the later rounds with previously selected winners. This basically completed the bulk of our march madness website features. We also added a "live bracket" page, giving users a dynamic view of the ongoing March Madness bracket. With these two major components complete, we’ve successfully met our Sprint 2 objectives and remain well on track to hit our end-of-year goals. 
-
-Our plans for the upcoming weeks are to continue developing some missing features. These include adding respective information to teams (seeding, game start, etc), developing a save bracket option, incorporating a user scoring system, minor UI updates, among others. 
-## Sprint 3, Week 1 (April 2 - April 9) - Progress Report
-This week our group added a save bracket feature that adds the user bracket to the bracket table in our database. This has put us in a succesful spot as far as finishing our bracket scoring and functionality. Additionally, we added new UI changes to improve the look of our homepage.
-
-Our plan for next week is to finish everything related to the brackets for good. Outside of this we can begin focusing on improving our CI/CD pipeline, deploying our production containers, and finally adding any optional features that our group agrees on.
-## Sprint 3, Week 2 (April 9 - April 16) - Progress Report
-This week our group added user bracket retrieval and rendering. We also finished bracket scoring and began working on some final features that we want to add. We are on track to have a finished product.
-
-Our plan for next week is to finish flushing out our new features and fix some bugs present in our user bracket system.
-
-## Sprint 3, Week 3 (April 16 - April 23) - Progress Report
-This week our group added new bug fixes, a live scores page, settings page, and a chatbot. We are almost ready for our final demo. We just need to implement a few more patches to fix bugs with the chatbot and bracket.
-
-Our plan for next week is to fix the final bugs, complete the priority 3 issues, and prepare for the final demo.
-
-
+- JWT-based authentication
+- Password hashing
+- Environment variable management
+- Secure API endpoints
