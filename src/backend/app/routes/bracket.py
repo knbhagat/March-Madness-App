@@ -236,3 +236,96 @@ def verify_user():
         return None, jsonify({'error': 'User not found'}), 404
 
     return user, None, None
+
+
+@bracket_bp.route('/format_bracket', methods=['GET'])
+def format_bracket():
+    # Get the raw bracket data from the API
+    url = f"https://api.sportradar.com/ncaamb/trial/v8/en/tournaments/{mm_tournament_id}/schedule.json?api_key={api_key}"
+    headers = {"accept": "application/json"}
+    response = requests.get(url, headers=headers)
+    
+    if response.status_code != 200:
+        return jsonify({'error': 'Failed to get data from API'}), 500
+        
+    data = response.json()
+    round_obj_array = []
+    region_order = ["EAST", "MIDWEST", "SOUTH", "WEST"]
+
+    for idx1, round_data in enumerate(data.get('rounds', [])):
+        # Skip the First Four
+        if idx1 != 0:
+            seed_array = []
+            
+            if idx1 < 5:
+                # Sort regions based on predefined order
+                bracketed = round_data.get('bracketed', [])
+                bracketed.sort(key=lambda x: region_order.index(x['bracket']['name'].split()[0].upper()) 
+                             if x['bracket']['name'].split()[0].upper() in region_order 
+                             else len(region_order))
+
+                for region in bracketed:
+                    # Sort games by game number
+                    games = region.get('games', [])
+                    games.sort(key=lambda x: int(x['title'].split('Game ')[-1]))
+
+                    for game in games:
+                        # Create team objects
+                        away_team = {
+                            "name": game['away']['alias'],
+                            "seed": game['away']['seed']
+                        }
+                        home_team = {
+                            "name": game['home']['alias'],
+                            "seed": game['home']['seed']
+                        }
+                        
+                        # Create seed object
+                        team_info = {
+                            "id": game['id'],
+                            "location": f"{game['venue']['name']} ({game['venue']['city']}, {game['venue']['state']})",
+                            "teams": [home_team, away_team],
+                            "homeScore": game['home_points'],
+                            "awayScore": game['away_points'],
+                            "date": datetime.datetime.fromisoformat(game['scheduled'].replace('Z', '+00:00')).strftime("%B %d, %Y"),
+                            "region": region['bracket']['name'].split()[0].upper()
+                        }
+                        seed_array.append(team_info)
+            else:
+                # Handle Final Four and Championship games
+                for game in round_data.get('games', []):
+                    away_team = {
+                        "name": game['away']['alias'],
+                        "seed": game['away']['seed']
+                    }
+                    home_team = {
+                        "name": game['home']['alias'],
+                        "seed": game['home']['seed']
+                    }
+                    
+                    team_info = {
+                        "id": game['id'],
+                        "location": f"{game['venue']['name']} ({game['venue']['city']}, {game['venue']['state']})",
+                        "teams": [home_team, away_team],
+                        "region": "FINAL FOUR",
+                        "homeScore": game['home_points'],
+                        "awayScore": game['away_points'],
+                        "date": datetime.datetime.fromisoformat(game['scheduled'].replace('Z', '+00:00')).strftime("%B %d, %Y")
+                    }
+                    seed_array.append(team_info)
+
+            # Create round object
+            round_obj = {
+                "title": round_data['name'],
+                "seeds": seed_array
+            }
+            round_obj_array.append(round_obj)
+
+    # Create final bracket object
+    bracket_obj = {
+        "title": data['name'],
+        "id": 0,
+        "rounds": round_obj_array
+    }
+
+    return jsonify(bracket_obj), 200
