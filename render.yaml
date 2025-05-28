@@ -1,0 +1,48 @@
+services:
+  - type: web
+    name: frontend
+    env: docker
+    plan: free
+    dockerfilePath: ./src/frontend-mm_app/Dockerfile.dev
+    buildContext: ./src/frontend-mm_app
+    envVars:
+      - key: VITE_BACKEND_URL
+        value: http://backend:8000  # Internal Docker service name
+
+  - type: web
+    name: backend
+    env: docker
+    plan: free
+    dockerfilePath: ./src/backend/Dockerfile
+    buildContext: ./src/backend
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: PYTHONPATH
+        value: ${PYTHONPATH}
+      - key: BRACKET_API_KEY
+        value: ${BRACKET_API_KEY}
+      - key: MM_TOURNAMENT_ID
+        value: ${MM_TOURNAMENT_ID}
+      - key: MM_PREV_TOURNAMENT_ID
+        value: ${MM_PREV_TOURNAMENT_ID}
+      - key: WIT_AI_TOKEN
+        value: ${WIT_AI_TOKEN}
+      - key: OPENAI_API_KEY
+        value: ${OPENAI_API_KEY}
+      - key: SQLALCHEMY_DATABASE_URI
+        value: mysql://root:team3@db:3306/march_madness_betting
+
+  - type: worker
+    name: db
+    env: docker
+    plan: free
+    dockerfilePath: ./src/MySQL_Database/Dockerfile  # You must have this Dockerfile
+    buildContext: ./src/MySQL_Database
+    envVars:
+      - key: MYSQL_ROOT_PASSWORD
+        value: team3
+      - key: MYSQL_DATABASE
+        value: march_madness_betting
+      - key: MYSQL_ROOT_HOST
+        value: '%'
