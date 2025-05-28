@@ -59,7 +59,7 @@ export default function LiveBracketPage() {
         )
       ) : (
         <div className="border border-white px-8">
-          <Bracket bracket={liveBracket} liveBracket={true} />
+          <Bracket bracket={liveBracket} type={"live"} />
         </div>
       )}
     </>

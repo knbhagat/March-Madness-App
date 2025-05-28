@@ -24,6 +24,7 @@ export type Team = {
     title: string,
     rounds?:Round[],
     regions?: Record<Region, Seed[]>
+    type?: string
   };
 
   

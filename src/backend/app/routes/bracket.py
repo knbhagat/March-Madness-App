@@ -155,12 +155,15 @@ def get_user_bracket(bracket_number):
     if not bracket:
         return jsonify({'error': 'Bracket not found'}), 404
 
+    print(bracket)
+
     # Return the bracket selection data
     return (
         jsonify(
             {
                 'message': 'Bracket retrieved successfully',
-                'bracket': bracket.bracket_selection,
+                'selection': bracket.bracket_selection.get('selection'),
+                'bracket': bracket.bracket_selection.get('bracket')
             }
         ),
         200,
@@ -177,39 +180,49 @@ def create_user_bracket():
     # Get bracket number  and bracket selection
     data = request.get_json()
     bracket_number = data.get('bracket_number')
-    bracket_selection = data.get('bracket_selection')
+    bracket_selection = data.get("bracket_selection")
+    
+    # Will need to reconstruct the bracket
+    new_bracket = { 
+        "bracket" : build_parsed_bracket(bracket_number, bracket_selection), 
+        "selection" : bracket_selection
+    }
+
     if not bracket_number or not bracket_selection:
         return (
             jsonify({'error': 'Bracket number and bracket selection are required'}),
             400,
         )
+
     # Check if the user already has a bracket for the given bracket_number
     existing_bracket = Bracket.query.filter_by(
         id=user.id, bracket_number=bracket_number
     ).first()
+
+
     if existing_bracket:
         # If the bracket exists, we can either update
-        existing_bracket.bracket_selection = bracket_selection
+        existing_bracket.bracket_selection = new_bracket
         db.session.commit()
         return (
             jsonify(
                 {
                     'message': 'Bracket updated successfully',
-                    'bracket': bracket_selection,
+                    'bracket': new_bracket,
                 }
             ),
             200,
         )
 
     # If the bracket doesn't exist, create a new one
-    new_bracket = Bracket(
-        id=user.id, bracket_number=bracket_number, bracket_selection=bracket_selection
+    new_user_bracket = Bracket(
+        id=user.id, bracket_number=bracket_number, bracket_selection=new_bracket
     )
-    db.session.add(new_bracket)
+    db.session.add(new_user_bracket)
     db.session.commit()
     return (
         jsonify(
-            {'message': 'Bracket created successfully', 'bracket': bracket_selection}
+            {'message': 'Bracket created successfully', 'bracket': new_bracket}
         ),
         201,
     )
@@ -236,6 +249,98 @@ def verify_user():
         return None, jsonify({'error': 'User not found'}), 404
 
     return user, None, None
+
+
+def build_parsed_bracket(id, selected_teams):
+    parsed_bracket = {
+        "id": id,
+        "title": "March Madness Bracket",
+        "regions": {
+            "EAST": {
+                "rounds": [
+                    {"title": "First Round", "seeds": []},
+                    {"title": "Second Round", "seeds": []},
+                    {"title": "Sweet 16", "seeds": []},
+                    {"title": "Elite 8", "seeds": []},
+                ]
+            },
+            "MIDWEST": {
+                "rounds": [
+                    {"title": "First Round", "seeds": []},
+                    {"title": "Second Round", "seeds": []},
+                    {"title": "Sweet 16", "seeds": []},
+                    {"title": "Elite 8", "seeds": []},
+                ]
+            },
+            "SOUTH": {
+                "rounds": [
+                    {"title": "First Round", "seeds": []},
+                    {"title": "Second Round", "seeds": []},
+                    {"title": "Sweet 16", "seeds": []},
+                    {"title": "Elite 8", "seeds": []},
+                ]
+            },
+            "WEST": {
+                "rounds": [
+                    {"title": "First Round", "seeds": []},
+                    {"title": "Second Round", "seeds": []},
+                    {"title": "Sweet 16", "seeds": []},
+                    {"title": "Elite 8", "seeds": []},
+                ]
+            },
+            "FINAL_FOUR": {
+                "rounds": [
+                    {"title": "Final Four", "seeds": []},
+                    {"title": "National Championship", "seeds": []},
+                ]
+            },
+        }
+    }
+
+    for key, value in selected_teams.items():
+        parts = key.split("-")
+        if len(parts) < 3:
+            continue  # invalid key format, skip
+
+        round_index_str = parts[0]
+        _seed_index = parts[1]
+        region_raw = "-".join(parts[2:]).strip()
+        region_key = "FINAL_FOUR" if region_raw.upper() == "FINAL FOUR" else region_raw.upper()
+
+        try:
+            round_index = int(round_index_str)
+        except ValueError:
+            continue
+
+        value_parts = value.split("-")
+        if len(value_parts) < 3:
+            continue  # invalid value format, skip
+
+        team_seed_and_name = value_parts[0].split("_")
+        if len(team_seed_and_name) < 2:
+            continue  # invalid team format
+
+        team_seed = team_seed_and_name[0]
+        team_name = "_".join(team_seed_and_name[1:]).strip()
+
+        try:
+            game_id = int(value_parts[1])
+        except ValueError:
+            continue
+
+        seed_obj = {
+            "id": game_id,
+            "winner": team_name,
+            "teams": [{"name": team_name, "seed": team_seed}],
+        }
+
+        if (
+            region_key in parsed_bracket["regions"] and
+            round_index < len(parsed_bracket["regions"][region_key]["rounds"])
+        ):
+            parsed_bracket["regions"][region_key]["rounds"][round_index]["seeds"].append(seed_obj)
+
+    return parsed_bracket
 
 
 @bracket_bp.route('/format_bracket', methods=['GET'])
@@ -325,7 +430,7 @@ def format_bracket():
     bracket_obj = {
         "title": data['name'],
         "id": 0,
-        "rounds": round_obj_array
+        "rounds": round_obj_array,
     }
 
     return jsonify(bracket_obj), 200

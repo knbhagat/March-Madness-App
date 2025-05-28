@@ -8,18 +8,24 @@ import {
 
 const BACKEND_URL = "http://localhost:8000";
 
+interface SavedBracket extends BracketType {
+  type?: 'saved';
+  bracket?: BracketType;
+  selection: any;
+}
+
 export default function BracketPage({
   initialBrackets = [],
 }: {
   initialBrackets?: BracketType[];
 }) {
-  const [brackets, setBrackets] = useState<BracketType[]>(initialBrackets);
+  const [brackets, setBrackets] = useState<(BracketType | SavedBracket)[]>(initialBrackets);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [scoresMap, setScoresMap] = useState<Record<number, number>>({});
-  const [selectedTeamsMap, setSelectedTeamsMap] = useState<
-    Record<number, Record<string, string>>
-  >({});
+  // const [scoresMap, setScoresMap] = useState<Record<number, number>>({});
+  // const [selectedTeamsMap, setSelectedTeamsMap] = useState<
+  //   Record<number, Record<string, string>>
+  // >({});
   const token = localStorage.getItem("token");
   const bracketRefs = useRef<Record<number, any>>({});
 
@@ -29,162 +35,195 @@ export default function BracketPage({
         setError("Login required.");
         setLoading(false);
         return;
-      }
-
-      try {
+      } else {
+        // do this for now -- change later -- will need to add alot of logic
         const res = await fetch(`${BACKEND_URL}/get_user_bracket_numbers`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const { bracket_numbers } = await res.json();
+        console.log(bracket_numbers);
 
-        const savedBrackets = await Promise.all(
-          bracket_numbers.map(async (num) => {
-            const res = await fetch(`${BACKEND_URL}/get_user_bracket/${num}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            });
-            const data = await res.json();
-            return data.bracket;
-          }),
-        );
-        const rawBrackets = savedBrackets.map(b => JSON.parse(JSON.stringify(b)));
-
-        const templateRes = await fetch(
-          `${BACKEND_URL}/generate_bracket_template`,
-          {
+        const fetchedBrackets = [];
+        // For each bracket number, fetch the bracket and add it to setBrackets
+        for (const num of bracket_numbers) {
+          const res = await fetch(`${BACKEND_URL}/get_user_bracket/${num}`, {
             headers: { Authorization: `Bearer ${token}` },
-          },
-        );
-        const template = await templateRes.json();
-
-        const selectionMap: Record<number, Record<string, string>> = {};
-
-        const formatted: BracketType[] = savedBrackets.map((saved) => {
-          const selected = extractSelectedTeamsFromBracket(saved);
-          selectionMap[saved.id] = selected;
-
-          for (const region of ["EAST", "WEST", "SOUTH", "MIDWEST"]) {
-            const seeds = template.regions[region];
-            if (seeds?.length > 0) {
-              saved.regions[region].rounds[0].seeds = seeds;
-            }
+          });
+          const data = await res.json();
+          console.log("data: ", data)
+          if (data && data.bracket) {
+            // Attach the bracket number as id
+            const bracketWithId = {
+              bracket: typeof data.bracket === "object" ? data.bracket : {},
+              selection: typeof data.bracket === "object" ? data.selection : {},
+              id: num,
+              type: 'saved' // adding a type component
+            };
+            fetchedBrackets.push(bracketWithId as SavedBracket);
           }
-
-          const getTeam = (key: string) => {
-            const val = selected[key];
-            if (!val) return { name: "TBD" };
-            const [seed, name] = val.split("-")[0].split("_");
-            return { name, seed };
-          };
-
-          saved.regions["FINAL_FOUR"] = {
-            rounds: [
-              {
-                title: "Final Four",
-                seeds: [
-                  {
-                    id: 1,
-                    teams: [getTeam("3-0-EAST"), getTeam("3-0-MIDWEST")],
-                  },
-                  { id: 2, teams: [getTeam("3-0-SOUTH"), getTeam("3-0-WEST")] },
-                ],
-              },
-              {
-                title: "National Championship",
-                seeds: [
-                  {
-                    id: 1,
-                    teams: [
-                      getTeam("0-0-FINAL FOUR"),
-                      getTeam("0-1-FINAL FOUR"),
-                    ],
-                  },
-                ],
-              },
-              {
-                title: "Champion",
-                seeds: [
-                  {
-                    id: 1,
-                    teams: [getTeam("1-0-FINAL FOUR"), { name: "TBD" }],
-                  },
-                ],
-              },
-            ],
-          };
-
-          return saved;
-        });
-
-        setBrackets(formatted);
-        setSelectedTeamsMap(selectionMap);
-        const liveRes = await fetch(`${BACKEND_URL}/get_bracket`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const liveBracket = await liveRes.json();
-        
-        // ── score the untouched clone, not the mutated one ───────────────
-        const newScores: Record<number, number> = {};
-        await Promise.all(
-          rawBrackets.map(async (raw) => {
-            const resp = await fetch(`${BACKEND_URL}/score_bracket`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify({
-                user_bracket: raw,        // << use the clean copy
-                live_bracket: liveBracket,
-              }),
-            });
-            const { score } = await resp.json();
-            newScores[raw.id] = score;
-          })
-        );
-        setScoresMap(newScores);
-
-
-      } catch (err) {
-        console.error("Bracket load error:", err);
-        setError("Could not load brackets.");
-      } finally {
+        }
+        setBrackets(fetchedBrackets as any);
+        console.log("fetchedBrackets: ", fetchedBrackets)
         setLoading(false);
       }
     }
-
     fetchBrackets();
   }, [token]);
 
-  const extractSelectedTeamsFromBracket = (
-    bracket: BracketType,
-  ): Record<string, string> => {
-    const selected: Record<string, string> = {};
+  //     try {
+  //       const res = await fetch(`${BACKEND_URL}/get_user_bracket_numbers`, {
+  //         headers: { Authorization: `Bearer ${token}` },
+  //       });
+  //       const { bracket_numbers } = await res.json();
 
-    for (const [region, regionObj] of Object.entries(bracket.regions)) {
-      const isFinalFour = region === "FINAL_FOUR";
-      const regionKey = isFinalFour ? "FINAL FOUR" : region;
+  //       const savedBrackets = await Promise.all(
+  //         bracket_numbers.map(async (num) => {
+  //           const res = await fetch(`${BACKEND_URL}/get_user_bracket/${num}`, {
+  //             headers: { Authorization: `Bearer ${token}` },
+  //           });
+  //           const data = await res.json();
+  //           return data.bracket;
+  //         }),
+  //       );
+  //       const rawBrackets = savedBrackets.map(b => JSON.parse(JSON.stringify(b)));
 
-      regionObj.rounds?.forEach((round, roundIndex) => {
-        round.seeds?.forEach((seed, seedIndex) => {
-          seed.teams?.forEach((team, teamIndex) => {
-            if (!team?.name || team.name === "TBD" || !team.seed) return;
+  //       const templateRes = await fetch(
+  //         `${BACKEND_URL}/generate_bracket_template`,
+  //         {
+  //           headers: { Authorization: `Bearer ${token}` },
+  //         },
+  //       );
+  //       const template = await templateRes.json();
 
-            if (isFinalFour) {
-              const key = `${roundIndex}-${seedIndex}-${regionKey}`;
-              const value = `${team.seed}_${team.name}-${seed.id}-${teamIndex}`;
-              selected[key] = value;
-            } else {
-              const key = `${roundIndex}-${seed.id - 1}-${regionKey}`;
-              const value = `${team.seed}_${team.name}-${seed.id}-${teamIndex}`;
-              selected[key] = value;
-            }
-          });
-        });
-      });
-    }
+  //       const selectionMap: Record<number, Record<string, string>> = {};
 
-    return selected;
-  };
+  //       const formatted: BracketType[] = savedBrackets.map((saved) => {
+  //         const selected = extractSelectedTeamsFromBracket(saved);
+  //         selectionMap[saved.id] = selected;
+
+  //         for (const region of ["EAST", "WEST", "SOUTH", "MIDWEST"]) {
+  //           const seeds = template.regions[region];
+  //           if (seeds?.length > 0) {
+  //             saved.regions[region].rounds[0].seeds = seeds;
+  //           }
+  //         }
+
+  //         const getTeam = (key: string) => {
+  //           const val = selected[key];
+  //           if (!val) return { name: "TBD" };
+  //           const [seed, name] = val.split("-")[0].split("_");
+  //           return { name, seed };
+  //         };
+
+  //         saved.regions["FINAL_FOUR"] = {
+  //           rounds: [
+  //             {
+  //               title: "Final Four",
+  //               seeds: [
+  //                 {
+  //                   id: 1,
+  //                   teams: [getTeam("3-0-EAST"), getTeam("3-0-MIDWEST")],
+  //                 },
+  //                 { id: 2, teams: [getTeam("3-0-SOUTH"), getTeam("3-0-WEST")] },
+  //               ],
+  //             },
+  //             {
+  //               title: "National Championship",
+  //               seeds: [
+  //                 {
+  //                   id: 1,
+  //                   teams: [
+  //                     getTeam("0-0-FINAL FOUR"),
+  //                     getTeam("0-1-FINAL FOUR"),
+  //                   ],
+  //                 },
+  //               ],
+  //             },
+  //             {
+  //               title: "Champion",
+  //               seeds: [
+  //                 {
+  //                   id: 1,
+  //                   teams: [getTeam("1-0-FINAL FOUR"), { name: "TBD" }],
+  //                 },
+  //               ],
+  //             },
+  //           ],
+  //         };
+
+  //         return saved;
+  //       });
+
+  //       setBrackets(formatted);
+  //       setSelectedTeamsMap(selectionMap);
+  //       const liveRes = await fetch(`${BACKEND_URL}/get_bracket`, {
+  //         headers: { Authorization: `Bearer ${token}` },
+  //       });
+  //       const liveBracket = await liveRes.json();
+        
+  //       // ── score the untouched clone, not the mutated one ───────────────
+  //       const newScores: Record<number, number> = {};
+  //       await Promise.all(
+  //         rawBrackets.map(async (raw) => {
+  //           const resp = await fetch(`${BACKEND_URL}/score_bracket`, {
+  //             method: "POST",
+  //             headers: {
+  //               "Content-Type": "application/json",
+  //               Authorization: `Bearer ${token}`,
+  //             },
+  //             body: JSON.stringify({
+  //               user_bracket: raw,        // << use the clean copy
+  //               live_bracket: liveBracket,
+  //             }),
+  //           });
+  //           const { score } = await resp.json();
+  //           newScores[raw.id] = score;
+  //         })
+  //       );
+  //       setScoresMap(newScores);
+
+
+  //     } catch (err) {
+  //       console.error("Bracket load error:", err);
+  //       setError("Could not load brackets.");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   }
+
+  //   fetchBrackets();
+  // }, [token]);
+
+  // const extractSelectedTeamsFromBracket = (
+  //   bracket: BracketType,
+  // ): Record<string, string> => {
+  //   const selected: Record<string, string> = {};
+
+  //   for (const [region, regionObj] of Object.entries(bracket.regions)) {
+  //     const isFinalFour = region === "FINAL_FOUR";
+  //     const regionKey = isFinalFour ? "FINAL FOUR" : region;
+
+  //     regionObj.rounds?.forEach((round, roundIndex) => {
+  //       round.seeds?.forEach((seed, seedIndex) => {
+  //         seed.teams?.forEach((team, teamIndex) => {
+  //           if (!team?.name || team.name === "TBD" || !team.seed) return;
+
+  //           if (isFinalFour) {
+  //             const key = `${roundIndex}-${seedIndex}-${regionKey}`;
+  //             const value = `${team.seed}_${team.name}-${seed.id}-${teamIndex}`;
+  //             selected[key] = value;
+  //           } else {
+  //             const key = `${roundIndex}-${seed.id - 1}-${regionKey}`;
+  //             const value = `${team.seed}_${team.name}-${seed.id}-${teamIndex}`;
+  //             selected[key] = value;
+  //           }
+  //         });
+  //       });
+  //     });
+  //   }
+
+  //   return selected;
+  // };
 
   const convertToRoundsFormat = (regionSeeds: Record<string, Seed[]>) => {
     const regionNames = ["EAST", "WEST", "SOUTH", "MIDWEST"];
@@ -234,6 +273,9 @@ export default function BracketPage({
       const data = await API.json();
       const bracket_num_data = await bracket_number.json();
 
+      console.log("generated bracket data:", data);
+      console.log("bracket_num_data", bracket_num_data);
+
       setBrackets((prev) => [
         ...prev,
         {
@@ -243,6 +285,7 @@ export default function BracketPage({
         },
       ]);
       setLoading(false);
+      console.log("Rounds format converstion: ", convertToRoundsFormat(data.regions))
     } catch (err) {
       console.error("Error with creating bracket:", err);
       setError("Failed to generate bracket.");
@@ -251,18 +294,14 @@ export default function BracketPage({
 
   const saveBracket = async (bracket_number: number) => {
     const bracketRef = bracketRefs.current[bracket_number];
-    if (!bracketRef) {
-      console.error(`No ref found for bracket ${bracket_number}`);
-      setError("Failed to save bracket: Reference not found");
-      return;
-    }
-
     const token = localStorage.getItem("token");
-    const bracket = bracketRef.getParsedBracketData();
-    if (!bracket) {
+
+    if (!bracketRef) {
       alert("Please finish all 63 picks before saving!");
       return;
     }
+
+    console.log("saved bracket data", bracketRef);
 
     try {
       const saveResponse = await fetch(`${BACKEND_URL}/create_user_bracket`, {
@@ -273,10 +312,9 @@ export default function BracketPage({
         },
         body: JSON.stringify({
           bracket_number,
-          bracket_selection: bracket,
+          bracket_selection: bracketRef,
         }),
       });
-      const saveData = await saveResponse.json();
 
       const userBracketResponse = await fetch(
         `${BACKEND_URL}/get_user_bracket/${bracket_number}`,
@@ -288,42 +326,49 @@ export default function BracketPage({
         },
       );
       const userBracketData = await userBracketResponse.json();
+      console.log("userBracketData", userBracketData);
       if (!userBracketData.bracket) {
-        throw new Error("User bracket not found");
+        throw new Error("User bracket was not saved properly");
       }
-
-      const liveBracketResponse = await fetch(`${BACKEND_URL}/get_bracket`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const liveBracketData = await liveBracketResponse.json();
-
-      const scoreResponse = await fetch(`${BACKEND_URL}/score_bracket`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          user_bracket: userBracketData.bracket,
-          live_bracket: liveBracketData,
-        }),
-      });
-
-      if (!scoreResponse.ok) throw new Error("Scoring failed");
-      const scoreData = await scoreResponse.json();
-      console.log("Score data: ", scoreData);
-      setScoresMap(prev => ({
-        ...prev,
-        [bracket_number]: scoreData.score,
-      }));
     } catch (error) {
       console.error("Error saving bracket:", error);
       setError("Failed to save bracket.");
     }
-  };
+  }
+
+    // WILL REVIEW SCORING LATER
+
+    //   const liveBracketResponse = await fetch(`${BACKEND_URL}/get_bracket`, {
+    //     method: "GET",
+    //     headers: {
+    //       Authorization: `Bearer ${token}`,
+    //     },
+    //   });
+    //   const liveBracketData = await liveBracketResponse.json();
+
+    //   const scoreResponse = await fetch(`${BACKEND_URL}/score_bracket`, {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //       Authorization: `Bearer ${token}`,
+    //     },
+    //     body: JSON.stringify({
+    //       user_bracket: userBracketData.bracket,
+    //       live_bracket: liveBracketData,
+    //     }),
+    //   });
+
+    //   if (!scoreResponse.ok) throw new Error("Scoring failed");
+    //   const scoreData = await scoreResponse.json();
+    //   console.log("Score data: ", scoreData);
+    //   setScoresMap(prev => ({
+    //     ...prev,
+    //     [bracket_number]: scoreData.score,
+    //   }));
+    // } catch (error) {
+    //   console.error("Error saving bracket:", error);
+    //   setError("Failed to save bracket.");
+    // }
 
 return (
   <div className="p-4">
@@ -335,7 +380,7 @@ return (
     {!loading && !error && brackets.length > 0 ? (
       <ul>
         {brackets.map((bracket, index) => {
-          const selectedTeams = selectedTeamsMap[bracket.id] || {};
+          // const selectedTeams = selectedTeamsMap[bracket.id] || {};
 
           return (
             <li key={index} className="mb-2 border p-2 rounded">
@@ -344,29 +389,18 @@ return (
                   ref={(el) => {
                     if (el) bracketRefs.current[bracket.id] = el;
                   }}
-                  bracket={bracket}
-                  liveBracket={false}
-                  initialSelection={selectedTeams}
-                  onChange={(newMap) =>
-                    setSelectedTeamsMap((prev) => ({
-                      ...prev,
-                      [bracket.id]: newMap,
-                    }))
-                  }
+                  bracket={('type' in bracket) ? (bracket as SavedBracket).bracket as BracketType : bracket}
+                  type={bracket.type}
+                  initialSelection={('type' in bracket) ? (bracket as any).selection as Record<string, string> : undefined}
                 />
-
                 {/* SAVE button only if not yet scored; otherwise show score */}
                 <div className="absolute bottom-2 right-2 flex items-center space-x-4">
-                  {scoresMap[bracket.id] == null ? (
                     <Button
                       onClick={() => saveBracket(bracket.id)}
                       className="bg-[var(--primary-color)] font-bold hover:bg-blue-900"
                     >
                       SAVE BRACKET
                     </Button>
-                  ) : (
-                    <span className="font-bold">Score: {scoresMap[bracket.id]}</span>
-                  )}
                 </div>
               </div>
             </li>
