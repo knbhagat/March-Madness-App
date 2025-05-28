@@ -15,6 +15,12 @@ bracket_bp = Blueprint('bracket', __name__)
 
 @bracket_bp.route('/score_bracket', methods=['POST'])
 def score_user_bracket():
+    """
+    Calculates the score of a user's bracket by comparing it with the live bracket.
+    
+    Returns:
+        JSON response containing the calculated score
+    """
     # Verify the user.
     user, mes, errNum = verify_user()
     if not user:
@@ -22,57 +28,77 @@ def score_user_bracket():
 
     data = request.get_json()
     user_bracket = data.get('user_bracket')
-    live_bracket = data.get('live_bracket')
-    if not user_bracket or not live_bracket:
+    if not user_bracket:
         return (
-            jsonify({'error': 'Both user_bracket and live_bracket are required'}),
+            jsonify({'error': 'user_bracket is required'}),
             400,
         )
-    # Calculate the score by comparing the user bracket with the live bracket.
+    
+    # Get live bracket data and calculate score
+    live_bracket = get_live_bracket_data()
     score = score_bracket(user_bracket, live_bracket)
     return jsonify({'score': score}), 200
+
+
+def get_live_bracket_data():
+    """
+    Fetches the current live bracket data from the SportRadar API.
+    
+    Returns:
+        JSON response containing the live bracket data
+    """
+    url = f"https://api.sportradar.com/ncaamb/trial/v8/en/tournaments/{mm_tournament_id}/schedule.json?api_key={api_key}"
+    headers = {"accept": "application/json"}
+    response = requests.get(url, headers=headers)
+    return response.json()
 
 
 # Returns live bracket from API
 @bracket_bp.route('/get_bracket', methods=['GET'])
 def get_realtime_bracket():
-    # switch out mm_tournament_id, with prev_mm_tournament_id dependent on what you need
-    # to understand/use
-    url = f"https://api.sportradar.com/ncaamb/trial/v8/en/tournaments/{mm_tournament_id}/schedule.json?api_key={api_key}"  # noqa: E501
+    """
+    Endpoint to retrieve the current live bracket data.
+    
+    Returns:
+        JSON response containing the live bracket data
+    """
+    data = get_live_bracket_data()
+    return jsonify(data)
+
+
+def get_bracket_template_data():
+    """
+    Fetches and processes the bracket template data from the SportRadar API.
+    This includes organizing teams by region and creating the initial bracket structure.
+    
+    Returns:
+        Dictionary containing the formatted bracket template data
+    """
+    url = f"https://api.sportradar.com/ncaamb/trial/v8/en/tournaments/{mm_tournament_id}/schedule.json?api_key={api_key}"
     headers = {"accept": "application/json"}
     response = requests.get(url, headers=headers)
-    return jsonify(response.json())
-
-
-@bracket_bp.route('/generate_bracket_template', methods=['GET'])
-def generate_bracket_template():
-    # copied from above
-    url = f"https://api.sportradar.com/ncaamb/trial/v8/en/tournaments/{mm_tournament_id}/schedule.json?api_key={api_key}"  # noqa: E501
-    headers = {"accept": "application/json"}  # <-- include this
-    response = requests.get(url, headers=headers)
     if response.status_code != 200:
-        return jsonify({'error': 'Failed to get data from API'}), 500
+        return None
 
     data = response.json()
 
-    # loops and filters API to find first round
+    # Find first round data from API response
     first_round = next((r for r in data['rounds'] if r['name'] == 'First Round'), None)
     if not first_round:
-        return jsonify({'error': 'First Round not found'}), 404
+        return None
 
-    # values from API
+    # Map region indices to region names
     region_map = {0: "SOUTH", 1: "MIDWEST", 2: "EAST", 3: "WEST"}
-
     region_seeds = {region: [] for region in region_map.values()}
 
-    # Loop through each bracketed region from the API's First Round data
+    # Process each region's games
     for i, region in enumerate(first_round.get("bracketed", [])):
-        # gets from region_map
         region_name = region_map.get(i, f"Region {i}")
-        # sort games - copies Krishaan's code but in python
         games = region.get("games", [])
+        # Sort games by game number
         games.sort(key=lambda g: int(g.get("title", "Game 99").split("Game ")[-1]))
-        # Build a Seed - one of 8 games in reigon
+        
+        # Create seed objects for each game
         for game_index, game in enumerate(games):
             seed = {
                 "id": game_index + 1,
@@ -90,18 +116,38 @@ def generate_bracket_template():
             }
             region_seeds[region_name].append(seed)
 
-    # builds bracket structure to send to frontend
+    # Construct final bracket structure
     bracket = {
         "id": int(datetime.datetime.now().timestamp()),
         "title": "March Madness Bracket",
         "regions": region_seeds,
     }
 
+    return bracket
+
+
+@bracket_bp.route('/generate_bracket_template', methods=['GET'])
+def generate_bracket_template():
+    """
+    Endpoint to generate a new bracket template.
+    
+    Returns:
+        JSON response containing the bracket template data
+    """
+    bracket = get_bracket_template_data()
+    if not bracket:
+        return jsonify({'error': 'Failed to get data from API'}), 500
     return jsonify(bracket), 200
 
 
 @bracket_bp.route('/get_user_bracket_id', methods=['GET'])
 def get_bracket_id():
+    """
+    Retrieves the next available bracket ID for a user.
+    
+    Returns:
+        JSON response containing the next bracket number
+    """
     user, mes, errNum = verify_user()
     if user == None:
         return mes, errNum
@@ -110,18 +156,22 @@ def get_bracket_id():
         .filter_by(id=user.id)
         .scalar()
     )
-    # If user has no brackets, start from 1
     next_bracket_number = (max_bracket or 0) + 1
     return jsonify({'next_bracket_number': next_bracket_number})
 
 
 @bracket_bp.route('/get_user_bracket_numbers', methods=['GET'])
 def get_user_bracket_numbers():
+    """
+    Retrieves all bracket numbers associated with the current user.
+    
+    Returns:
+        JSON response containing an array of bracket numbers
+    """
     user, mes, errNum = verify_user()
     if user is None:
         return mes, errNum
 
-    # all bracket_numbers (# of brackets) for the user
     bracket_numbers = (
         db.session.query(Bracket.bracket_number)
         .filter_by(id=user.id)
@@ -145,19 +195,23 @@ def get_user_bracket_numbers():
 # Returns users bracket that has already been created
 @bracket_bp.route('/get_user_bracket/<int:bracket_number>', methods=['GET'])
 def get_user_bracket(bracket_number):
-    # User Verification
+    """
+    Retrieves a specific user bracket by bracket number.
+    
+    Args:
+        bracket_number: The number of the bracket to retrieve
+        
+    Returns:
+        JSON response containing the bracket data and selection
+    """
     user, mes, errNum = verify_user()
     if user == None:
         return mes, errNum
 
-    # Fetch the user's bracket by user_id and bracket_number
     bracket = Bracket.query.filter_by(id=user.id, bracket_number=bracket_number).first()
     if not bracket:
         return jsonify({'error': 'Bracket not found'}), 404
 
-    print(bracket)
-
-    # Return the bracket selection data
     return (
         jsonify(
             {
@@ -173,16 +227,21 @@ def get_user_bracket(bracket_number):
 # Created User Bracket
 @bracket_bp.route('/create_user_bracket', methods=['POST'])
 def create_user_bracket():
-    # User Verification
+    """
+    Creates or updates a user's bracket.
+    
+    Returns:
+        JSON response indicating success or failure of the operation
+    """
     user, mes, errNum = verify_user()
     if user == None:
         return mes, errNum
-    # Get bracket number  and bracket selection
+
     data = request.get_json()
     bracket_number = data.get('bracket_number')
     bracket_selection = data.get("bracket_selection")
     
-    # Will need to reconstruct the bracket
+    # Construct new bracket with parsed data
     new_bracket = { 
         "bracket" : build_parsed_bracket(bracket_number, bracket_selection), 
         "selection" : bracket_selection
@@ -194,14 +253,13 @@ def create_user_bracket():
             400,
         )
 
-    # Check if the user already has a bracket for the given bracket_number
+    # Check for existing bracket
     existing_bracket = Bracket.query.filter_by(
         id=user.id, bracket_number=bracket_number
     ).first()
 
-
     if existing_bracket:
-        # If the bracket exists, we can either update
+        # Update existing bracket
         existing_bracket.bracket_selection = new_bracket
         db.session.commit()
         return (
@@ -214,7 +272,7 @@ def create_user_bracket():
             200,
         )
 
-    # If the bracket doesn't exist, create a new one
+    # Create new bracket
     new_user_bracket = Bracket(
         id=user.id, bracket_number=bracket_number, bracket_selection=new_bracket
     )
@@ -230,20 +288,21 @@ def create_user_bracket():
 
 # User Verification
 def verify_user():
-    # Extract the token from the Authorization header
+    """
+    Verifies the user's authentication token and retrieves user information.
+    
+    Returns:
+        Tuple containing (user object, error message, error number)
+    """
     auth_header = request.headers.get('Authorization')
     if not auth_header:
         return None, jsonify({'error': 'Authorization header missing'}), 401
 
-    # The token should be in the form 'Bearer <token>'
     token = auth_header.split(" ")[1] if len(auth_header.split()) > 1 else None
     if not token:
         return None, jsonify({'error': 'Token missing'}), 401
 
-    # Use the token as the user ID (or replace with your preferred method)
     user_id = token
-
-    # Retrieve the user from the database using the provided user_id
     user = User.query.get(user_id)
     if not user:
         return None, jsonify({'error': 'User not found'}), 404
@@ -252,9 +311,20 @@ def verify_user():
 
 
 def build_parsed_bracket(id, selected_teams):
+    """
+    Builds a parsed bracket structure from selected teams.
+    
+    Args:
+        id: The bracket ID
+        selected_teams: Dictionary containing the selected teams
+        
+    Returns:
+        Dictionary containing the parsed bracket structure
+    """
+    # Initialize bracket structure
     parsed_bracket = {
         "id": id,
-        "title": "March Madness Bracket",
+        "title": f"March Madness Bracket {id}",
         "regions": {
             "EAST": {
                 "rounds": [
@@ -297,10 +367,11 @@ def build_parsed_bracket(id, selected_teams):
         }
     }
 
+    # Process selected teams and build bracket structure
     for key, value in selected_teams.items():
         parts = key.split("-")
         if len(parts) < 3:
-            continue  # invalid key format, skip
+            continue
 
         round_index_str = parts[0]
         _seed_index = parts[1]
@@ -314,11 +385,11 @@ def build_parsed_bracket(id, selected_teams):
 
         value_parts = value.split("-")
         if len(value_parts) < 3:
-            continue  # invalid value format, skip
+            continue
 
         team_seed_and_name = value_parts[0].split("_")
         if len(team_seed_and_name) < 2:
-            continue  # invalid team format
+            continue
 
         team_seed = team_seed_and_name[0]
         team_name = "_".join(team_seed_and_name[1:]).strip()
@@ -328,24 +399,53 @@ def build_parsed_bracket(id, selected_teams):
         except ValueError:
             continue
 
+        # Create seed object for the selected team
         seed_obj = {
             "id": game_id,
             "winner": team_name,
             "teams": [{"name": team_name, "seed": team_seed}],
         }
 
+        # Add seed to appropriate region and round
         if (
             region_key in parsed_bracket["regions"] and
             round_index < len(parsed_bracket["regions"][region_key]["rounds"])
         ):
             parsed_bracket["regions"][region_key]["rounds"][round_index]["seeds"].append(seed_obj)
 
+    # Sort games by game ID
+    for region in parsed_bracket["regions"].values():
+        if "rounds" in region:
+            for round_obj in region["rounds"]:
+                round_obj["seeds"].sort(key=lambda seed: seed["id"])
+
+    # Merge with first round teams
+    data = get_bracket_template_data()
+    if not data:
+        return parsed_bracket
+
+    # Update first round teams with template data
+    regions = parsed_bracket.get("regions", {})
+    for region_name, region in regions.items():
+        if region_name != "FINAL_FOUR" and isinstance(region, dict) and "rounds" in region:
+            first_round = region["rounds"][0]
+            seeds = first_round.get("seeds", [])
+            region_games = data.get("regions", {}).get(region_name, [])
+            for i in range(len(seeds)):
+                if i < len(region_games):
+                    seeds[i]["teams"] = region_games[i].get("teams", [])
+
     return parsed_bracket
 
 
 @bracket_bp.route('/format_bracket', methods=['GET'])
 def format_bracket():
-    # Get the raw bracket data from the API
+    """
+    Formats the raw bracket data from the API into a structured format.
+    
+    Returns:
+        JSON response containing the formatted bracket data
+    """
     url = f"https://api.sportradar.com/ncaamb/trial/v8/en/tournaments/{mm_tournament_id}/schedule.json?api_key={api_key}"
     headers = {"accept": "application/json"}
     response = requests.get(url, headers=headers)
@@ -357,61 +457,59 @@ def format_bracket():
     round_obj_array = []
     region_order = ["EAST", "MIDWEST", "SOUTH", "WEST"]
 
+    # Process each round of the tournament
     for idx1, round_data in enumerate(data.get('rounds', [])):
-        # Skip the First Four
-        if idx1 != 0:
+        if idx1 != 0:  # Skip First Four
             seed_array = []
             
-            if idx1 < 5:
+            if idx1 < 5:  # Regional rounds
                 # Sort regions based on predefined order
                 bracketed = round_data.get('bracketed', [])
                 bracketed.sort(key=lambda x: region_order.index(x['bracket']['name'].split()[0].upper()) 
                              if x['bracket']['name'].split()[0].upper() in region_order 
                              else len(region_order))
 
+                # Process each region's games
                 for region in bracketed:
-                    # Sort games by game number
                     games = region.get('games', [])
                     games.sort(key=lambda x: int(x['title'].split('Game ')[-1]))
 
                     for game in games:
-                        # Create team objects
-                        away_team = {
-                            "name": game['away']['alias'],
-                            "seed": game['away']['seed']
-                        }
-                        home_team = {
-                            "name": game['home']['alias'],
-                            "seed": game['home']['seed']
-                        }
-                        
-                        # Create seed object
+                        # Create team objects with game information
                         team_info = {
                             "id": game['id'],
                             "location": f"{game['venue']['name']} ({game['venue']['city']}, {game['venue']['state']})",
-                            "teams": [home_team, away_team],
+                            "teams": [
+                                {
+                                    "name": game['home']['alias'],
+                                    "seed": game['home']['seed']
+                                },
+                                {
+                                    "name": game['away']['alias'],
+                                    "seed": game['away']['seed']
+                                }
+                            ],
                             "homeScore": game['home_points'],
                             "awayScore": game['away_points'],
                             "date": datetime.datetime.fromisoformat(game['scheduled'].replace('Z', '+00:00')).strftime("%B %d, %Y"),
                             "region": region['bracket']['name'].split()[0].upper()
                         }
                         seed_array.append(team_info)
-            else:
-                # Handle Final Four and Championship games
+            else:  # Final Four and Championship games
                 for game in round_data.get('games', []):
-                    away_team = {
-                        "name": game['away']['alias'],
-                        "seed": game['away']['seed']
-                    }
-                    home_team = {
-                        "name": game['home']['alias'],
-                        "seed": game['home']['seed']
-                    }
-                    
                     team_info = {
                         "id": game['id'],
                         "location": f"{game['venue']['name']} ({game['venue']['city']}, {game['venue']['state']})",
-                        "teams": [home_team, away_team],
+                        "teams": [
+                            {
+                                "name": game['home']['alias'],
+                                "seed": game['home']['seed']
+                            },
+                            {
+                                "name": game['away']['alias'],
+                                "seed": game['away']['seed']
+                            }
+                        ],
                         "region": "FINAL FOUR",
                         "homeScore": game['home_points'],
                         "awayScore": game['away_points'],

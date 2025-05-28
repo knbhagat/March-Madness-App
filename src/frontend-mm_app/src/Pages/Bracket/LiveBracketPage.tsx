@@ -7,13 +7,22 @@ import {
 import { useState, useEffect } from "react";
 import Bracket from "@/Pages/Bracket/components/bracket";
 
+/**
+ * LiveBracketPage Component
+ * 
+ * Displays the current live March Madness bracket with real-time scores and results.
+ * Fetches data from the backend API and renders it using the Bracket component.
+ */
 export default function LiveBracketPage() {
-  // use state var to set live bracket
+  // State for managing the live bracket data
   const [liveBracket, setLiveBracket] = useState<BracketType>({} as BracketType);
-  // does not show info while waiting/loading info from the api
   const [error, setError] = useState<String>("");
   const [loading, setLoading] = useState(true);
 
+  /**
+   * Fetches the live bracket data from the backend API
+   * Updates the component state with the fetched data
+   */
   useEffect(() => {
     async function grab_live_bracket_info() {
       try {
@@ -28,7 +37,6 @@ export default function LiveBracketPage() {
         }
         setLiveBracket(data);
         setLoading(false);
-        console.log("liveBracket data: ", data);
       } catch (err) {
         console.error("Error fetching brackets:", err);
         setError("Failed to load live bracket");
@@ -42,6 +50,7 @@ export default function LiveBracketPage() {
     <>
       {loading ? (
         error ? (
+          // Error state display
           <div className="border rounded-lg p-6 text-center">
             <p className="font-medium">{error}</p>
             <button 
@@ -52,12 +61,14 @@ export default function LiveBracketPage() {
             </button>
           </div>
         ) : (
+          // Loading state display
           <div className="flex flex-col items-center justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-400 mb-4"></div>
             <p className="pl-2">Loading live bracket...</p>
           </div>
         )
       ) : (
+        // Live bracket display
         <div className="border border-white px-8">
           <Bracket bracket={liveBracket} type={"live"} />
         </div>
