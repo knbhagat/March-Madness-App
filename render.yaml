@@ -18,5 +18,3 @@ services:
     envVars:
       - key: FLASK_ENV
         value: production
-      - key: SQLALCHEMY_DATABASE_URI
-        value: mysql://root:uOhYMhEhZZTyPkLfNefDIhvGXItwAvqB@shortline.proxy.rlwy.net:10082/railway
