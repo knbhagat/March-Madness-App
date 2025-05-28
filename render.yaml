@@ -19,18 +19,4 @@ services:
       - key: FLASK_ENV
         value: production
       - key: SQLALCHEMY_DATABASE_URI
-        value: mysql://root:team3@db:3306/march_madness_betting
-
-  - type: worker
-    name: db
-    env: docker
-    plan: free
-    dockerfilePath: ./src/MySQL_Database/Dockerfile
-    dockerContext: ./src/MySQL_Database
-    envVars:
-      - key: MYSQL_ROOT_PASSWORD
-        value: team3
-      - key: MYSQL_DATABASE
-        value: march_madness_betting
-      - key: MYSQL_ROOT_HOST
-        value: '%'
+        value: mysql://root:uOhYMhEhZZTyPkLfNefDIhvGXItwAvqB@shortline.proxy.rlwy.net:10082/railway
