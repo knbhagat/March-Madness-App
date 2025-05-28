@@ -18,18 +18,6 @@ services:
     envVars:
       - key: FLASK_ENV
         value: production
-      - key: PYTHONPATH
-        value: ${PYTHONPATH}
-      - key: BRACKET_API_KEY
-        value: ${BRACKET_API_KEY}
-      - key: MM_TOURNAMENT_ID
-        value: ${MM_TOURNAMENT_ID}
-      - key: MM_PREV_TOURNAMENT_ID
-        value: ${MM_PREV_TOURNAMENT_ID}
-      - key: WIT_AI_TOKEN
-        value: ${WIT_AI_TOKEN}
-      - key: OPENAI_API_KEY
-        value: ${OPENAI_API_KEY}
       - key: SQLALCHEMY_DATABASE_URI
         value: mysql://root:team3@db:3306/march_madness_betting
 
