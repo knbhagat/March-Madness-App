@@ -7,7 +7,6 @@ export function LiveScoresPage() {
     const [marchMadnessData, mmData] = useState(null);
 
     function changeScores(buttonName, data){
-        console.log(data)
         // Changes name of button container (stored in element "title") with button name
         var title = document.getElementById("title");
         title.innerHTML = buttonName;
