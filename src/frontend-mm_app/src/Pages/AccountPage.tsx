@@ -12,6 +12,8 @@ export default function AccountPage() {
   const [success, setSuccess] = useState(""); 
   const [token, setToken] = useState<string | null>(localStorage.getItem("token"));
 
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
 
   // get info when login/logout
   useEffect(() => {
@@ -35,7 +37,7 @@ export default function AccountPage() {
     const length = localStorage.getItem("passwordLength");
   
     // get user info from backend
-    fetch("http://localhost:8000/auth/get-user", {
+    fetch(`${backendUrl}/auth/get-user`, {
       headers: {
         Authorization: `Bearer ${currentToken}`,
       },
@@ -85,7 +87,7 @@ export default function AccountPage() {
     if (password) formData.append("password", password);
   
     try {
-      const response = await fetch("http://localhost:8000/auth/update-profile", {
+      const response = await fetch(`${backendUrl}/auth/update-profile`, {
         method: "POST",
         headers: { Authorization: `Bearer ${savedToken}` },
         body: formData,

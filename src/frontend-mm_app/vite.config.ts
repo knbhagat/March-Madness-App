@@ -10,6 +10,10 @@ export default defineConfig({
     },
   },
   server: {
+    host: true, // 🔑 allow access from external hosts
+    allowedHosts: [
+      "frontend-e4ce.onrender.com", // 🔑 allow your Render frontend domain
+    ],
     proxy: {
       "/api": {
         target: "http://backend:8000",

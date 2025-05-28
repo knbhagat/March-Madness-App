@@ -19,6 +19,8 @@ export default function LiveBracketPage() {
   const [error, setError] = useState<String>("");
   const [loading, setLoading] = useState(true);
 
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
   /**
    * Fetches the live bracket data from the backend API
    * Updates the component state with the fetched data
@@ -26,7 +28,7 @@ export default function LiveBracketPage() {
   useEffect(() => {
     async function grab_live_bracket_info() {
       try {
-        const response = await fetch("http://localhost:8000/format_bracket");
+        const response = await fetch(`${backendUrl}/format_bracket`);
         if (!response.ok) {
           throw new Error("Failed to fetch brackets");
         }

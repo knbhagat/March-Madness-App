@@ -6,6 +6,8 @@ import logo_import from "../images/ncaa_logos/AUB.png";
 export function LiveScoresPage() {
     const [marchMadnessData, mmData] = useState(null);
 
+    const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
     function changeScores(buttonName, data){
         // Changes name of button container (stored in element "title") with button name
         var title = document.getElementById("title");
@@ -116,7 +118,7 @@ export function LiveScoresPage() {
     // Data Fetch method that runs when the page is refreshed 
     useEffect(() => {
         function grab_bracket_data() {
-          fetch("http://localhost:8000/get_bracket", {
+          fetch(`${backendUrl}/get_bracket`, {
             method: "GET",
           })
           .then((response) => {

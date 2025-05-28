@@ -17,13 +17,15 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string>("");
 
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const email = emailRef.current?.value;
     const password = passwordRef.current?.value;
 
     try {
-      const response = await fetch("http://localhost:8000/auth/login", {
+      const response = await fetch(`${backendUrl}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

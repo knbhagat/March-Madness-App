@@ -6,7 +6,7 @@ import {
   Seed,
 } from "@/Pages/Bracket/components/bracketTypes";
 
-const BACKEND_URL = "http://localhost:8000";
+const backendUrl = import.meta.env.VITE_BACKEND_URL;;
 
 /**
  * Interface for saved bracket data
@@ -53,7 +53,7 @@ export default function BracketPage({
 
       try {
         // Get list of user's bracket numbers
-        const res = await fetch(`${BACKEND_URL}/get_user_bracket_numbers`, {
+        const res = await fetch(`${backendUrl}/get_user_bracket_numbers`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const { bracket_numbers } = await res.json();
@@ -61,13 +61,13 @@ export default function BracketPage({
         const fetchedBrackets = [];
         // Fetch each bracket and calculate its score
         for (const num of bracket_numbers) {
-          const res = await fetch(`${BACKEND_URL}/get_user_bracket/${num}`, {
+          const res = await fetch(`${backendUrl}/get_user_bracket/${num}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           const data = await res.json();
           if (data && data.bracket) {
             // Calculate bracket score
-            const scoring_res = await fetch(`${BACKEND_URL}/score_bracket`, {
+            const scoring_res = await fetch(`${backendUrl}/score_bracket`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -139,7 +139,7 @@ export default function BracketPage({
   const createBracket = async () => {
     try {
       // Get bracket template
-      const API = await fetch(`${BACKEND_URL}/generate_bracket_template`, {
+      const API = await fetch(`${backendUrl}/generate_bracket_template`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -147,7 +147,7 @@ export default function BracketPage({
       });
 
       // Get next bracket number
-      const bracket_number = await fetch(`${BACKEND_URL}/get_user_bracket_id`, {
+      const bracket_number = await fetch(`${backendUrl}/get_user_bracket_id`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -191,7 +191,7 @@ export default function BracketPage({
 
     try {
       // Save bracket
-      const saveResponse = await fetch(`${BACKEND_URL}/create_user_bracket`, {
+      const saveResponse = await fetch(`${backendUrl}/create_user_bracket`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -205,7 +205,7 @@ export default function BracketPage({
 
       // Get updated bracket data
       const userBracketResponse = await fetch(
-        `${BACKEND_URL}/get_user_bracket/${bracket_number}`,
+        `${backendUrl}/get_user_bracket/${bracket_number}`,
         {
           method: "GET",
           headers: {
@@ -219,7 +219,7 @@ export default function BracketPage({
       }
 
       // Calculate new score
-      const scoring_res = await fetch(`${BACKEND_URL}/score_bracket`, {
+      const scoring_res = await fetch(`${backendUrl}/score_bracket`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

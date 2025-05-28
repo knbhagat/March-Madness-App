@@ -127,8 +127,6 @@ def score_bracket(user_bracket, live_bracket):
     the user selections.
     """
     live_winners = parse_live_winners(live_bracket)
-    print("live bracket winners:", live_winners, flush=True)
-    print("user bracket:", user_bracket, flush=True)
     total_score = 0
 
     # Iterate through each region in the user bracket (including FINAL_FOUR).
@@ -141,17 +139,6 @@ def score_bracket(user_bracket, live_bracket):
                 user_winner = seed.get("winner")
                 try:
                     live_winner = live_winners[region][round_index][game_index]
-                    print(
-                        "Region:",
-                        region,
-                        "Round:",
-                        round_title,
-                        "User winner:",
-                        user_winner,
-                        "Live winner:",
-                        live_winner,
-                        flush=True,
-                    )
                     if user_winner == live_winner:
                         total_score += ROUND_POINTS.get(round_title, 0)
                 except (IndexError, KeyError):

@@ -7,7 +7,7 @@ services:
     dockerContext: ./src/frontend-mm_app
     envVars:
       - key: VITE_BACKEND_URL
-        value: http://backend:8000
+        value: https://backend-yr7u.onrender.com
 
   - type: web
     name: backend

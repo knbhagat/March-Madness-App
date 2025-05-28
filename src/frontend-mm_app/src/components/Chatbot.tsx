@@ -28,6 +28,8 @@ const Chatbot = () => {
 
   const chatBoxRef = useRef<HTMLUListElement>(null);
 
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
   /**
    * Scrolls the chat box to the bottom when new messages are added
    */
@@ -108,7 +110,7 @@ const Chatbot = () => {
    */
   const _aiResponse = (message: string): void => {
     // Make Wit.ai API call through our backend proxy
-    fetch(`http://localhost:8000/api/witai?message=${encodeURIComponent(message)}`)
+    fetch(`${backendUrl}/api/witai?message=${encodeURIComponent(message)}`)
     .then(response => response.json())
     .then(data => {
       // Handle the Wit.ai response based on detected intent
@@ -148,7 +150,7 @@ const Chatbot = () => {
             break;
           default:
             // Use OpenAI API through our backend proxy
-            fetch('http://localhost:8000/api/openai', {
+            fetch(`${backendUrl}/api/openai`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -168,7 +170,7 @@ const Chatbot = () => {
         }
       } else {
         // Use OpenAI API through our backend proxy when no intent is detected
-        fetch('http://localhost:8000/api/openai', {
+        fetch(`${backendUrl}/api/openai`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
