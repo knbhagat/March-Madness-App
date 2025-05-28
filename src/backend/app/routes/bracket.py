@@ -454,6 +454,9 @@ def format_bracket():
         return jsonify({'error': 'Failed to get data from API'}), 500
         
     data = response.json()
+    if not data:
+        return jsonify({'error': 'Failed to get data from API'}), 500
+    
     round_obj_array = []
     region_order = ["EAST", "MIDWEST", "SOUTH", "WEST"]
 

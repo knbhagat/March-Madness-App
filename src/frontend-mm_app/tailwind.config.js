@@ -50,6 +50,17 @@ module.exports = {
     				'4': 'hsl(var(--chart-4))',
     				'5': 'hsl(var(--chart-5))'
     			}
+    		},
+    		keyframes: {
+    			'bounce-in': {
+    				'0%': { transform: 'scale(0.3)', opacity: '0' },
+    				'50%': { transform: 'scale(1.05)', opacity: '0.8' },
+    				'70%': { transform: 'scale(0.9)', opacity: '0.9' },
+    				'100%': { transform: 'scale(1)', opacity: '1' },
+    			}
+    		},
+    		animation: {
+    			'bounce-in': 'bounce-in 0.5s ease-out',
     		}
     	}
     },

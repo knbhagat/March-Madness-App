@@ -8,23 +8,31 @@ import LiveBracketPage from './Pages/Bracket/LiveBracketPage';
 import Chatbot from './components/Chatbot';
 import { LiveScoresPage } from './Pages/LiveScoresPage';
 import AccountPage from './Pages/AccountPage';
+import WelcomeMessage from './components/WelcomeMessage';
 
 // Main App component with React Router integrated
 function App() {
+  console.log('App component rendering'); // Debug log
+
   return (
-    <Router>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<Homepage />} />
-        <Route path="/signup" element={<SignupForm />} />
-        <Route path="/login" element={<LoginForm />} />
-        <Route path="/bracket" element={<BracketPage />} />
-        <Route path="/liveBracket" element={<LiveBracketPage />} />
-        <Route path="/scores" element={<LiveScoresPage />} />
-        <Route path="/account" element={<AccountPage />} />
-      </Routes>
-      <Chatbot />
-    </Router>
+    <>
+      <WelcomeMessage />
+      <Router>
+        <div className="relative min-h-screen">
+          <Navbar />
+          <Routes>
+            <Route path="/" element={<Homepage />} />
+            <Route path="/signup" element={<SignupForm />} />
+            <Route path="/login" element={<LoginForm />} />
+            <Route path="/bracket" element={<BracketPage />} />
+            <Route path="/liveBracket" element={<LiveBracketPage />} />
+            <Route path="/scores" element={<LiveScoresPage />} />
+            <Route path="/account" element={<AccountPage />} />
+          </Routes>
+          <Chatbot />
+        </div>
+      </Router>
+    </>
   );
 }
 

@@ -33,7 +33,7 @@ export default function LiveBracketPage() {
           throw new Error("Failed to fetch brackets");
         }
         const data = await response.json();
-        if (data.message === "Limit Exceeded") {
+        if (!data || data.message === "Limit Exceeded" || data.error) {
           setError("Live bracket could not be loaded");
           throw new Error(data.message);
         }
