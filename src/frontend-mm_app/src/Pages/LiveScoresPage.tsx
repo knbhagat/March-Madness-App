@@ -28,6 +28,40 @@ interface BracketData {
     rounds: Round[];
 }
 
+const ScoreBox = ({ game }: { game: Game }) => {
+    const [awayLogo, setAwayLogo] = useState<string>('');
+    const [homeLogo, setHomeLogo] = useState<string>('');
+
+    useEffect(() => {
+        const images = import.meta.glob('../images/ncaa_logos/*.svg', { eager: true });
+        for (const path in images) {
+            const team_alias = path.split('/')[3].replace('.svg', '');
+            if (game.away.alias === team_alias) {
+                setAwayLogo((images[path] as { default: string }).default);
+            }
+            if (game.home.alias === team_alias) {
+                setHomeLogo((images[path] as { default: string }).default);
+            }
+        }
+    }, [game]);
+
+    return (
+        <div className="score-box">
+            <div className={`flex pb-[10px] pt-[10px] ${game.home_points > game.away_points ? 'font-semibold text-[16px]' : 'text-zinc-400 text-[16px]'}`}>
+                {homeLogo && <img src={homeLogo} width={25} alt={game.home.alias} />}
+                <p className="mr-auto pl-2">{game.home.alias}</p>
+                <p>{game.home_points}</p>
+            </div>
+            <div className={`flex pb-[10px] ${game.away_points > game.home_points ? 'font-semibold text-[16px]' : 'text-zinc-400 text-[16px]'}`}>
+                {awayLogo && <img src={awayLogo} width={25} alt={game.away.alias} />}
+                <p className="mr-auto pl-2">{game.away.alias}</p>
+                <p>{game.away_points}</p>
+            </div>
+            <p className="font-semibold text-[14px] pb-[10px] text-center">FINAL</p>
+        </div>
+    );
+};
+
 export function LiveScoresPage() {
     const [marchMadnessData, setMarchMadnessData] = useState<BracketData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -50,7 +84,6 @@ export function LiveScoresPage() {
             
             const data = await response.json();
             setMarchMadnessData(data);
-            changeScores("First Round", data);
         } catch (err) {
             setError("Failed to load scores. Please try again later.");
             console.error("Error fetching data:", err);
@@ -63,100 +96,31 @@ export function LiveScoresPage() {
         fetchBracketData();
     }, []);
 
-    function changeScores(buttonName: string, data: BracketData) {
-        setSelectedRound(buttonName);
-        const title = document.getElementById("title");
-        const container = document.getElementById("boxes");
+    const handleRoundChange = (roundName: string) => {
+        setSelectedRound(roundName);
+    };
+
+    const getCurrentRoundGames = () => {
+        if (!marchMadnessData) return [];
         
-        if (!title || !container) return;
+        // Find the round that matches the selected round name
+        const roundIndex = marchMadnessData.rounds.findIndex((r, index) => index !== 0 && r.name === selectedRound);
+        if (roundIndex === -1) return [];
 
-        title.innerHTML = buttonName;
-        title.className = "text-[22px] pb-6 pt-5";
-
-        // Clear container
-        container.innerHTML = '';
-
-        function createNewElements(game: Game) {
-            const newBox = document.createElement("div");
-            newBox.className = "score-box";
-
-            const away = document.createElement("div");
-            const home = document.createElement("div");
-
-            const name_away = document.createElement("p");
-            const name_home = document.createElement("p");
-            const score_away = document.createElement("p");
-            const score_home = document.createElement("p");
-
-            name_away.innerHTML = game.away.alias;
-            name_home.innerHTML = game.home.alias;
-            score_away.innerHTML = game.away_points.toString();
-            score_home.innerHTML = game.home_points.toString();
-            name_away.className = "mr-auto pl-2";
-            name_home.className = "mr-auto pl-2";
-
-            // Load team logos
-            const images = import.meta.glob('../images/ncaa_logos/*.svg', { eager: true });
-            for (const path in images) {
-                const team_alias = path.split('/')[3].replace('.svg','');
-                if (game.away.alias === team_alias) {
-                    const img = document.createElement('img');
-                    img.src = (images[path] as { default: string }).default;
-                    img.width = 25;
-                    away.appendChild(img);
-                }
-
-                if (game.home.alias === team_alias) {
-                    const img = document.createElement('img');
-                    img.src = (images[path] as { default: string }).default;
-                    img.width = 25;
-                    home.appendChild(img);
-                }
-            }
-
-            away.appendChild(name_away);
-            away.appendChild(score_away);
-            home.appendChild(name_home);
-            home.appendChild(score_home);
-
-            // Style based on winner
-            if (game.away_points < game.home_points) {
-                home.className = "font-semibold text-[16px] flex pb-[10px] pt-[10px]";
-                away.className = "text-zinc-400 text-[16px] flex pb-[10px]";
-            } else {
-                home.className = "text-zinc-400 text-[16px] flex pb-[10px] pt-[10px]";
-                away.className = "font-semibold text-[16px] flex pb-[10px]";
-            }
-
-            newBox.appendChild(home);
-            newBox.appendChild(away);
-
-            const game_status = document.createElement("p");
-            game_status.innerHTML = "FINAL";
-            game_status.className = "font-semibold text-[14px] pb-[10px] text-center";
-            newBox.appendChild(game_status);
-
-            container.appendChild(newBox);
+        const round = marchMadnessData.rounds[roundIndex];
+        
+        // Handle Final Four and National Championship rounds (index 5 and 6)
+        if (roundIndex >= 5) {
+            return round.games || [];
         }
-
-        data.rounds.forEach((round, index) => {
-            if (index !== 0 && round.name === buttonName) {
-                if (index < 5) {
-                    round.bracketed?.forEach(region => {
-                        region.games.forEach(game => {
-                            container.className = "columns-2";
-                            createNewElements(game);
-                        });
-                    });
-                } else {
-                    round.games?.forEach(game => {
-                        container.className = index === 6 ? "columns-1" : "columns-2";
-                        createNewElements(game);
-                    });
-                }
-            }
-        });
-    }
+        
+        // Handle earlier rounds (First Round through Elite Eight)
+        if (round.bracketed) {
+            return round.bracketed.flatMap(region => region.games);
+        }
+        
+        return [];
+    };
 
     const buttons = [
         { name: "First Round", date: "Mar 20 - 21" },
@@ -176,6 +140,9 @@ export function LiveScoresPage() {
         );
     }
 
+    const currentGames = getCurrentRoundGames();
+    const isChampionship = selectedRound === "National Championship";
+
     return (
         <div>
             <ButtonBar>
@@ -183,7 +150,7 @@ export function LiveScoresPage() {
                     <Button
                         key={button.name}
                         className={`live-scores-button ${selectedRound === button.name ? 'bg-blue-100' : ''}`}
-                        onClick={() => marchMadnessData && changeScores(button.name, marchMadnessData)}
+                        onClick={() => handleRoundChange(button.name)}
                     >
                         <div>
                             <p className="whitespace-pre-line">{button.name}</p>
@@ -200,8 +167,12 @@ export function LiveScoresPage() {
                     </div>
                 ) : (
                     <>
-                        <p id="title" className="text-[22px] pb-6 pt-5">{selectedRound}</p>
-                        <div className="columns-2" id="boxes"></div>
+                        <p className="text-[22px] pb-6 pt-5">{selectedRound}</p>
+                        <div className={`grid ${isChampionship ? 'grid-cols-1' : 'grid-cols-2'} gap-x-4 gap-y-2`}>
+                            {currentGames.map((game, index) => (
+                                <ScoreBox key={`${game.home.alias}-${game.away.alias}-${index}`} game={game} />
+                            ))}
+                        </div>
                     </>
                 )}
             </div>
