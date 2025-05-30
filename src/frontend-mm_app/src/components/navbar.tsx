@@ -28,6 +28,7 @@ export default function Navbar() {
         <Link to="/liveBracket">Live Bracket</Link>
         <Link to="/bracket">My Brackets</Link>
         <Link to="/scores">Scores</Link>
+        <Link to="/ai-predictions">AI Predictions</Link>
         <Link to="/account">My Account</Link>
         {token ? (
           <button

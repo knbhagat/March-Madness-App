@@ -9,6 +9,7 @@ import Chatbot from './components/Chatbot';
 import { LiveScoresPage } from './Pages/LiveScoresPage';
 import AccountPage from './Pages/AccountPage';
 import WelcomeMessage from './components/WelcomeMessage';
+import AIPrediction from './components/AIPrediction';
 
 // Main App component with React Router integrated
 function App() {
@@ -28,6 +29,7 @@ function App() {
             <Route path="/liveBracket" element={<LiveBracketPage />} />
             <Route path="/scores" element={<LiveScoresPage />} />
             <Route path="/account" element={<AccountPage />} />
+            <Route path="/ai-predictions" element={<AIPrediction />} />
           </Routes>
           <Chatbot />
         </div>

@@ -5,3 +5,6 @@ PyJWT
 flask_sqlalchemy
 mysqlclient
 requests
+scikit-learn==1.4.0
+numpy==1.26.4
+pandas==2.2.1

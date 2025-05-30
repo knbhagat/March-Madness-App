@@ -1,9 +1,10 @@
 # March Madness Betting Platform
 
-A full-stack web application that simulates sports betting for the NCAA March Madness tournament. Users can create brackets, track live scores, and compete with others in a simulated betting environment.
+A full-stack web application that simulates sports betting for the NCAA March Madness tournament, featuring an advanced AI prediction system. Users can create brackets, track live scores, and compete with others in a simulated betting environment, all while leveraging sophisticated machine learning predictions for informed decision-making.
 
 ## Features
 
+- **AI-Powered Predictions**: Advanced machine learning system using Random Forest Classifier to predict tournament outcomes with high accuracy
 - **User Authentication**: Secure login and registration system
 - **Live Bracket Creation**: Interactive bracket interface for March Madness predictions
 - **Real-time Updates**: Live scores and game updates
@@ -28,11 +29,22 @@ A full-stack web application that simulates sports betting for the NCAA March Ma
 - RESTful API architecture
 - SQL Database
 - JWT Authentication
+- Machine Learning Pipeline (Random Forest Classifier)
+- Advanced Statistical Analysis
 
 ### DevOps
 - Docker containerization
 - CI/CD Pipeline
 - Development and Production environments
+
+## AI Implementation
+
+The platform features a sophisticated machine learning system that:
+- Analyzes historical tournament data (2008-2024)
+- Utilizes advanced statistical metrics (NET RPI, RESUME, B POWER, R SCORE)
+- Provides real-time championship probability predictions
+- Offers interactive visualizations of team probabilities
+- Continuously updates predictions based on latest team statistics
 
 ## Getting Started
 
