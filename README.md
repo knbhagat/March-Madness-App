@@ -1,4 +1,4 @@
-# March Madness Betting Platform
+# Bracket Brain
 
 A full-stack web application that simulates sports betting for the NCAA March Madness tournament, featuring an advanced AI prediction system. Users can create brackets, track live scores, and compete with others in a simulated betting environment, all while leveraging sophisticated machine learning predictions for informed decision-making.
 
