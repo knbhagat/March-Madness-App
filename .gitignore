@@ -17,5 +17,13 @@ yarn-error.log
 .env.test.local
 .env.production.local
 
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.cpython-*
+
 # Tech stack
 `
